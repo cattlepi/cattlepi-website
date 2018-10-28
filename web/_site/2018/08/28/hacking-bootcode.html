@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://cattlepi.com/feed.xml" title="CattlePi" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">CattlePi</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/howto/">HowTo</a><a class="page-link" href="/flow/">Boot Flow</a><a class="page-link" href="/images/">Images</a><a class="page-link" href="/api/">Api</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Injecting Code via the BootCode</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2018-08-28T00:00:00-07:00" itemprop="datePublished">Aug 28, 2018
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This post will help you understand how the bootcode field in the device boot configuration works. It’s similarly to the usercode field we’ve played with in the <a href="/2018/08/21/pihole-and-usercode.html">previous tutorial</a></p>
+
+<!--more-->
+<p>So, how is the bootcode different from the usercode?<br />
+One difference is that it’s running in the boot phase, before the root filesystem is built and while the SD card is still in read/write more.<br />
+The typical usecase for this would be to alter something in config.txt or cmdline.txt, but because of the stage this runs in, you can pretty much hijack the boot process however you like.<br />
+You can see the code that handles the bootcode field <a href="https://github.com/cattlepi/cattlepi/blob/b30645c02553a009ed961eb1c0f0b108fee4a460/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers#L130">here</a>.</p>
+
+<p>For this tutorial we will update the ammount of gpu memory we are allocating for our Pi. For a bit of background, for the Raspberry Pi, the memory is split between the CPU and the GPU. By default the GPU gets 64 megabytes, and the CPU gets what’s left. More details here: <a href="https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md">config-txt/memory.md</a></p>
+
+<p>On a Pi that with an factory config.txt let’s look at how much memory the CPU has available:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pi@raspberrypi:~<span class="nv">$ </span>free <span class="nt">-mt</span>
+              total        used        free      shared  buff/cache   available
+Mem:            927          68         100         156         757         649
+Swap:             0           0           0
+Total:          927          68         100
+pi@raspberrypi:~<span class="nv">$ </span>vcgencmd get_mem arm
+<span class="nv">arm</span><span class="o">=</span>948M
+pi@raspberrypi:~<span class="nv">$ </span>vcgencmd get_mem gpu
+<span class="nv">gpu</span><span class="o">=</span>76M
+</code></pre></div></div>
+
+<p>In case you’re wondering the disconnect between the number reported by free and the get_mem arm is normal. You can use dmesg to see available memory vs total memory (and things that get free later in the process).</p>
+
+<p>We’re going to alter the <strong>gpu_mem</strong> option and set the memory the gpu uses to the minimum allowable (16).<br />
+You can see a way to achieve this here: <a href="https://github.com/cattlepi/cattlepi-samples/blob/074273edd6f37e5d99c99f5fe4fea2583ce84ee7/bootcode/mingpu.sh">mingpu.sh</a>. It’s pretty straighfoward with the trick being that the script can be executed on each boot and will only have any effect only if it wasn’t run before.</p>
+
+<p>Like we did in the case of the bootcode, we are going to configure the device boot configuration to retrieve and run this code. Remember that the bootcode is base64 encoded.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">BOOTCODE</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="k">$(</span><span class="nb">echo</span> <span class="s1">'curl -sSL https://raw.githubusercontent.com/cattlepi/cattlepi-samples/master/bootcode/mingpu.sh | /bin/sh'</span> | <span class="nb">base64</span> <span class="nt">-w</span> 0<span class="k">))</span>
+<span class="nv">PAYLOAD</span><span class="o">=</span><span class="s1">'{"bootcode":"'</span><span class="nv">$BOOTCODE</span><span class="s1">'","config":{"ssh":{"pi":{"authorized_keys":["'</span><span class="k">$(</span><span class="nb">head</span> <span class="nt">-1</span> <span class="nv">$HOME</span>/.ssh/id_rsa.pub<span class="k">)</span><span class="s1">'"]}}},"initfs":{"md5sum":"52a4b9c7be7850ce0d959244bfdee292", "url":"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/initramfs.tgz"},"rootfs":{"md5sum":"015615fdacb170c158ea5c20a959ceaf","url":"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/rootfs.sqsh"}}'</span>
+curl <span class="nt">-vvv</span> <span class="nt">-H</span> <span class="s2">"Accept: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da"</span> <span class="se">\</span>
+    <span class="nt">-X</span> POST <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$PAYLOAD</span><span class="s2">"</span> <span class="se">\</span>
+    https://api.cattlepi.com/boot/default/config
+</code></pre></div></div>
+
+<p>A small difference that you might notice is that instead of piping to bash we are piping to /bin/sh. Technically the environment we are running at the point not have a full bash shell, but it should be capable of executing this script. (if curious the shell is ash and it’s brought in by busybox).</p>
+
+<p>After changing the device config and rebooting, let’s run the same command as before:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pi@raspberrypi:~<span class="nv">$ </span>free <span class="nt">-mt</span>
+              total        used        free      shared  buff/cache   available
+Mem:            976          54         129         165         792         702
+Swap:             0           0           0
+Total:          976          54         129
+pi@raspberrypi:~<span class="nv">$ </span>vcgencmd get_mem arm
+<span class="nv">arm</span><span class="o">=</span>998M
+pi@raspberrypi:~<span class="nv">$ </span>vcgencmd get_mem gpu
+<span class="nv">gpu</span><span class="o">=</span>16M
+</code></pre></div></div>
+
+<p>To sum up: we’ve written a small shell script that we’ve injected into the bootcode field. Upon boot, this script alters the memory made available to the GPU to 16M. Remember that this is a demo of the kind of things you can do by injecting code via the bootcode field as the device is booting. You are free to change anything that happens in the boot stage.</p>
+
+<p>If the script you want to use is buggy/needs work and your Pi crashes while it boots up, here are a few pointers to help you:<br />
+<strong>1)</strong> attach a keyboard and a monitor to the Pi and use the <em>break=</em> kernel param as described here: https://wiki.debian.org/InitramfsDebug (you would put this in the cmdline.txt file)<br />
+<strong>2)</strong>  another technique involves setting the <em>boot_delay=</em> kernel param (see https://www.kernel.org/doc/html/v4.14/admin-guide/kernel-parameters.html) This will allow you to slow down the boot to a point where you can observe things.<br />
+<strong>3)</strong> Have your script log and/or have pauses in it for you to be able to better understand what’s going on.</p>
+
+<p>You can use any combination of the above or you can invent your own technique. Happy hacking.</p>
+
+  </div><a class="u-url" href="/2018/08/28/hacking-bootcode.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name"><li>Contact: <a class="u-email" href="mailto:hello@cattlepi.com">hello@cattlepi.com</a></li><br>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cattlepi</span></a></li><li><a href="https://www.twitter.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">cattlepi</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Based on https://github.com/cattlepi/cattlepi this provides the documentation for api.cattlepi.com that can be used in tandem with the cattlepi project</p>
+      </div>
+    </div>
+
+    <div class="footer-col-center">
+        <ul class="contact-list">
+        <li><a class="page-link" href="/terms/">TermsOfUse</a></li>
+        <li><a class="page-link" href="/privacy/">Privacy</a></li>
+        <br>
+        <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="/assets/80x15.png" /></a><br />The content on this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        Raspberry Pi is a trademark of the <a href="https://www.raspberrypi.org/">Raspberry Pi Foundation</a>
+      </ul>
+    </div>
+
+  </div>
+  
+
+</footer>
+</body>
+
+</html>

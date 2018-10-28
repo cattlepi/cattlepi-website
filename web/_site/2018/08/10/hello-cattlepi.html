@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://cattlepi.com/feed.xml" title="CattlePi" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">CattlePi</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/howto/">HowTo</a><a class="page-link" href="/flow/">Boot Flow</a><a class="page-link" href="/images/">Images</a><a class="page-link" href="/api/">Api</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Hello CattlePi - getting started with api.cattlepi.com</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2018-08-10T00:00:00-07:00" itemprop="datePublished">Aug 10, 2018
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This post will show you how to get started with cattlepi.
+We assume you already have a <a href="https://github.com/cattlepi/cattlepi/blob/master/doc/FAQ.md#what-types-of-hardware-does-this-work-on">supported</a> Raspberry Pi and an empty SD card you can use.
+<!--more--></p>
+
+<p>We also asume that the Pi is on a network in which it will receive an IP Address through DHCP and will be have internet connectivity (assuming network is correctly configured on the PI)</p>
+
+<h1 id="step-1---downloading-the-bootstrap-cattlepi-image">Step 1 - Downloading the bootstrap cattlepi image</h1>
+<p>Follow the instructions here: <a href="https://github.com/cattlepi/cattlepi#quickstart">https://github.com/cattlepi/cattlepi#quickstart</a><br />
+In normal operation you should not need a monitor (ie your Pi can run headless) but it’s recommended to have one for the first boot so that you can observe the process.</p>
+
+<p>After the boot the card will have the latest <strong>initfs</strong> and <strong>rootfs</strong> images that are configured for the default device for the demo api key (ie <strong>deadbeef</strong>).<br />
+To see what those are visit or curl the following link: <a href="https://api.cattlepi.com/boot/default/config?apiKey=deadbeef">https://api.cattlepi.com/boot/default/config?apiKey=deadbeef</a></p>
+
+<p>Sample curl request:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-s</span> https://api.cattlepi.com/boot/default/config?apiKey<span class="o">=</span>deadbeef | jq <span class="nb">.</span>
+</code></pre></div></div>
+
+<p>Sample output (may vary at a later point in the future):</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"bootcode"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+  </span><span class="s2">"initfs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"md5sum"</span><span class="p">:</span><span class="w"> </span><span class="s2">"8e0e2870637e77462b40b8fe67c6d91b"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"rootfs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"md5sum"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0826222b56df3d074fa4b21fd4b9d891"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"usercode"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre></div></div>
+<p>You can observe the images that are used under the <em>initfs.url</em> and <em>rootfs.url</em> keys. These are the images that will get downloaded and persisted on the SD card.</p>
+
+<h1 id="step-2---requestion-your-own-api-key">Step 2 - Requestion your own API Key</h1>
+<p>Using the demo api key is fine, but due to its shared nature you cannot do much with it. To be able to unleash the full possiblities of the API you will need to request your own API Key.</p>
+
+<p>Head over to the <a href="/api/">API</a> section and request your own API Key.<br />
+You need to provide a valid email address and after your API Key is assigned you will receive an link with instructions on how to activate it.</p>
+
+<p>For example, going through process I received and activated the following API Key:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>8db071a4-63ef-47f7-9cfc-ca479b5422da
+</code></pre></div></div>
+
+<h1 id="step-3---use-the-new-api-key">Step 3 - Use the new API Key</h1>
+<p>Let’s use your API key.<br />
+There are two ways to do this (either of them works):</p>
+<ul>
+  <li>build your own image as described <a href="https://github.com/cattlepi/cattlepi/blob/master/doc/BUILDING.md">here</a>. You will need to use your API Key.</li>
+  <li>update the SDCard to use your API Key</li>
+</ul>
+
+<p>Since this is a Hello World, we’ll use the latter.<br />
+Power down the Pi and remove the SDCard. Attach/Mount the SDCard to your machine and let’s inspect the contents.</p>
+
+<p>In the root of the SDCard we’ll do:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>s <span class="nt">-lah</span>
+total 34M
+drwxr-xr-x 4 root root 4.0K Dec 31  1969 <span class="nb">.</span>
+drwxr-xr-x 4 root root 4.0K Aug 10 17:28 ..
+<span class="nt">-rwxr-xr-x</span> 1 root root  22K Aug  7 22:37 bcm2708-rpi-0-w.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  22K Aug  7 22:37 bcm2708-rpi-b.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  22K Aug  7 22:37 bcm2708-rpi-b-plus.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  22K Aug  7 22:37 bcm2708-rpi-cm.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  23K Aug  7 22:37 bcm2709-rpi-2-b.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  24K Aug  7 22:37 bcm2710-rpi-3-b.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  25K Aug  7 22:37 bcm2710-rpi-3-b-plus.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  23K Aug  7 22:37 bcm2710-rpi-cm3.dtb
+<span class="nt">-rwxr-xr-x</span> 1 root root  51K Aug  7 22:37 bootcode.bin
+<span class="nt">-rwxr-xr-x</span> 1 root root  13M Aug  7 22:37 cattleinit.cpio
+drwxr-xr-x 2 root root 4.0K Aug 10 17:53 cattlepi
+<span class="nt">-rwxr-xr-x</span> 1 root root  161 Aug  7 22:37 cmdline.txt
+<span class="nt">-rwxr-xr-x</span> 1 root root 1.7K Aug  7 22:37 config.txt
+<span class="nt">-rwxr-xr-x</span> 1 root root  19K Aug  7 22:37 COPYING.linux
+<span class="nt">-rwxr-xr-x</span> 1 root root 2.6K Aug  7 22:37 fixup_cd.dat
+<span class="nt">-rwxr-xr-x</span> 1 root root 6.5K Aug  7 22:37 fixup.dat
+<span class="nt">-rwxr-xr-x</span> 1 root root 9.7K Aug  7 22:37 fixup_db.dat
+<span class="nt">-rwxr-xr-x</span> 1 root root 9.7K Aug  7 22:37 fixup_x.dat
+<span class="nt">-rwxr-xr-x</span> 1 root root   33 Aug 10 17:55 initfs
+<span class="nt">-rwxr-xr-x</span> 1 root root  145 Aug  7 22:37 issue.txt
+<span class="nt">-rwxr-xr-x</span> 1 root root 4.7M Aug  7 22:37 kernel7.img
+<span class="nt">-rwxr-xr-x</span> 1 root root 4.5M Aug  7 22:37 kernel.img
+<span class="nt">-rwxr-xr-x</span> 1 root root 1.5K Aug  7 22:37 LICENCE.broadcom
+<span class="nt">-rwxr-xr-x</span> 1 root root  19K Aug  7 22:37 LICENSE.oracle
+drwxr-xr-x 2 root root  12K Aug 10 17:55 overlays
+<span class="nt">-rwxr-xr-x</span> 1 root root 660K Aug  7 22:37 start_cd.elf
+<span class="nt">-rwxr-xr-x</span> 1 root root 4.9M Aug  7 22:37 start_db.elf
+<span class="nt">-rwxr-xr-x</span> 1 root root 2.8M Aug  7 22:37 start.elf
+<span class="nt">-rwxr-xr-x</span> 1 root root 3.9M Aug  7 22:37 start_x.elf
+</code></pre></div></div>
+<p>If this looks terribly familiar to what one would see on a Raspberry Pi under /boot it is because it’s more or less what you would see under boot with a few additions:</p>
+<ul>
+  <li>the cattleinit.cpio contains the ramdisk image that is used in the boot process. Because it’s a cpio file you can open it up and inspect the contents. All of the update logic is there.</li>
+  <li>the cattlepi dir contains the images we are caching and a config file (which is the output of the same earlier curl command)</li>
+  <li>the initfs file hold the checksum that the <em>initfs</em> image that resulted in this setup had (this is how the loader know when to update)</li>
+  <li>the config.txt file (present on all Pis) instructs the bootloaded to load the cattleinit.cpio file in memory, right after the kernel (relevant line is: <em>initramfs cattleinit.cpio followkernel</em>)</li>
+  <li>finally the cmdline.txt (passed to the kernel) contains the bootparameters for the kernel</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat </span>cmdline.txt | <span class="nb">tr</span> <span class="s2">" "</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+dwc_otg.lpm_enable<span class="o">=</span>0
+<span class="nv">console</span><span class="o">=</span>tty1
+<span class="nv">boot</span><span class="o">=</span>cattlepi
+<span class="nv">cattlepi_base</span><span class="o">=</span>https://api.cattlepi.com
+<span class="nv">cattlepi_apikey</span><span class="o">=</span>deadbeef
+<span class="nv">initrd</span><span class="o">=</span><span class="nt">-1</span>
+<span class="nv">elevator</span><span class="o">=</span>deadline
+rw
+rootwait
+<span class="nv">panic</span><span class="o">=</span>20
+</code></pre></div></div>
+
+<p>We’ve broken this down into multiple lines to observe it but in the file it’s only 1 line.
+The cattlepi_api tell the what api endpoint we will use. The cattlepi_apikey tells what api key we’re going to use.</p>
+
+<p>An obvious idea is to update the cattlepi_apikey to use our API key. If you were to update it, unmount the SDCard, insert in into the Pi and boot you would observe this would work. There is one problem though.</p>
+
+<p>Because the cmdline.txt is part of the image, if your configuration instructs the loaded to pick up another <strong>initfs</strong> it will get overwritten by whatever is that <strong>initfs</strong>. So it’s going to work until the next update.</p>
+
+<p>Fortunatelly there is one place where the API key does not get overwritten. If we have a file named <strong>/cattlepi/apikey</strong> the API key will be loaded from that file and will override the kernel parameters one (see logic <a href="https://github.com/cattlepi/cattlepi/blob/2c2d2100c8538f8df34adb31c1db1c2004f152da/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers">here</a>)</p>
+
+<p>In the root of SDcard do:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>bash <span class="nt">-c</span> <span class="s2">"echo 8db071a4-63ef-47f7-9cfc-ca479b5422da &gt; cattlepi/apikey"</span>
+</code></pre></div></div>
+<p>Be sure to replace 8db071a4-63ef-47f7-9cfc-ca479b5422da with your own api key.
+Also be sure to verify that the apikey was properly written:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat </span>cattlepi/apikey 
+8db071a4-63ef-47f7-9cfc-ca479b5422da
+</code></pre></div></div>
+<p>If everythign looks good unmount the SDCard and place it in the Raspberry Pi.
+Boot is up.</p>
+
+<h1 id="step-4---controlling-the-boot-targets-for-your-pi">Step 4 - Controlling the boot targets for your Pi.</h1>
+<p>In the previous step you’ve added you requested you own API key and injected it into the SDCard. Power up and boot the Raspberry Pi.<br />
+You will notice that the Raspberry Pi has issues booting and it fails with a HTTP 404 (ie not found).<br />
+This happens because you have not configured a boot or default boot target using your API key. Remember https://api.cattlepi.com/boot/default/config at step 1. This was actually the boot configuration for the <strong>default</strong> target.</p>
+
+<p>Each Raspberry Pi device that you want to associate with this API Key needs to have an unique id. By default if you don’t specify any the mac address of the hardware is the unique id.</p>
+
+<p>The when booting the the loader will attempt to go retrieve the configuration from:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://api.cattlepi.com/boot/&lt;unique_id&gt;/config
+</code></pre></div></div>
+
+<p>In the back the API will recognize this and will try to find the config for the specific device. If found it will use that config. If not found it will attempt to locate the default config. If that’s found the default is server. If neither are found you get the 404 that you’re experiencing now.</p>
+
+<p>Why have a default boot configuration target? The thinking here is that you should be able to connect your devices and have them use a generic boot target without having to worry about their ids. Later, if you want to specialize certain devices to do certain things you can easily inspect a list of deviceids that talked to the API and use them to specialize the devices.</p>
+
+<p>Right now let’s create a default boot target, using our api key:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-vvv</span> <span class="nt">-H</span> <span class="s2">"Accept: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da"</span> <span class="se">\</span>
+    <span class="nt">-X</span> POST <span class="nt">-d</span> <span class="s1">'{"initfs":{"md5sum":"8e0e2870637e77462b40b8fe67c6d91b", "url":"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz"},"rootfs":{"md5sum":"0826222b56df3d074fa4b21fd4b9d891","url":"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh"}}'</span> <span class="se">\</span>
+    https://api.cattlepi.com/boot/default/config
+</code></pre></div></div>
+
+<p>with the response of</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> POST /boot/default/config HTTP/1.1
+<span class="o">&gt;</span> Host: api.cattlepi.com
+<span class="o">&gt;</span> User-Agent: curl/7.47.0
+<span class="o">&gt;</span> Accept: application/json
+<span class="o">&gt;</span> Content-Type: application/json
+<span class="o">&gt;</span> X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da
+<span class="o">&gt;</span> Content-Length: 288
+<span class="o">&gt;</span> 
+<span class="k">*</span> upload completely sent off: 288 out of 288 bytes
+&lt; HTTP/1.1 200 OK
+&lt; Date: Sat, 11 Aug 2018 19:08:51 GMT
+&lt; Content-Type: application/json
+&lt; Content-Length: 16
+&lt; Connection: keep-alive
+&lt; x-amzn-RequestId: fb8a93a9-9d99-11e8-a3bd-29cf9684cc5c
+&lt; x-amz-apigw-id: <span class="nv">LeUaeEfcPHcFvEg</span><span class="o">=</span>
+&lt; X-Amzn-Trace-Id: <span class="nv">Root</span><span class="o">=</span>1-5b6f3443-1669693c7e1311e667fe786b<span class="p">;</span><span class="nv">Sampled</span><span class="o">=</span>0
+&lt; 
+<span class="k">*</span> Connection <span class="c">#0 to host api.cattlepi.com left intact</span>
+<span class="o">{</span><span class="s2">"status"</span>: <span class="s2">"ok"</span><span class="o">}</span>
+</code></pre></div></div>
+<p>So now we have a default boot target. To verify this we can do:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-s</span> <span class="nt">-H</span> <span class="s2">"X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da"</span> https://api.cattlepi.com/boot/default/config | jq <span class="nb">.</span>
+<span class="o">{</span>
+  <span class="s2">"bootcode"</span>: <span class="s2">""</span>,
+  <span class="s2">"config"</span>: <span class="o">{}</span>,
+  <span class="s2">"initfs"</span>: <span class="o">{</span>
+    <span class="s2">"md5sum"</span>: <span class="s2">"8e0e2870637e77462b40b8fe67c6d91b"</span>,
+    <span class="s2">"url"</span>: <span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz"</span>
+  <span class="o">}</span>,
+  <span class="s2">"rootfs"</span>: <span class="o">{</span>
+    <span class="s2">"md5sum"</span>: <span class="s2">"0826222b56df3d074fa4b21fd4b9d891"</span>,
+    <span class="s2">"url"</span>: <span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh"</span>
+  <span class="o">}</span>,
+  <span class="s2">"usercode"</span>: <span class="s2">""</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>You may be wondering how come the default boot target was there for the demo api key and was not there for our own api key. For all intents and purposes, everything under one API key is isolated. They keys shared the same path as far as the actual API goes but, in the back, they access different data sources. To go even further you could have the same device id (mac) used with multiple api keys and not see any conflicts. This is by design.</p>
+
+<p>Ok. Back to booting the Pi. Now that we have a default boot target let’s try booting it. You will notice that the Pi boots just fine now (and can retrive its config).</p>
+
+<p>Before wrapping up, let’s try and see if we can find a list of devices that are active under our API key.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-s</span> <span class="nt">-H</span> <span class="s2">"X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da"</span> https://api.cattlepi.com/track | jq <span class="nb">.</span>
+<span class="o">[</span>
+  <span class="s2">"default"</span>,
+  <span class="s2">"b8:27:eb:6c:33:e2"</span>
+<span class="o">]</span>
+</code></pre></div></div>
+<p>We’ve talked about the default boot target (ie not a device per se) and our device is <strong>b8:27:eb:6c:33:e2</strong><br />
+To inspect details about a specific device:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-s</span> <span class="nt">-H</span> <span class="s2">"X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da"</span> https://api.cattlepi.com/track/b8:27:eb:6c:33:e2 | jq <span class="nb">.</span>
+<span class="o">[</span>
+  <span class="s2">"2018-08-11 19:16:28.124746 BOOT GET"</span>,
+  <span class="s2">"2018-08-11 19:17:43.225184 BOOT GET"</span>
+<span class="o">]</span>
+</code></pre></div></div>
+
+<p>Details on all the supported call are documented in the <a href="/api/">API</a> section.</p>
+
+<p>This concludes our “Hello World” tour. Have fun turning your pet project into a cattle project.</p>
+
+  </div><a class="u-url" href="/2018/08/10/hello-cattlepi.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name"><li>Contact: <a class="u-email" href="mailto:hello@cattlepi.com">hello@cattlepi.com</a></li><br>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cattlepi</span></a></li><li><a href="https://www.twitter.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">cattlepi</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Based on https://github.com/cattlepi/cattlepi this provides the documentation for api.cattlepi.com that can be used in tandem with the cattlepi project</p>
+      </div>
+    </div>
+
+    <div class="footer-col-center">
+        <ul class="contact-list">
+        <li><a class="page-link" href="/terms/">TermsOfUse</a></li>
+        <li><a class="page-link" href="/privacy/">Privacy</a></li>
+        <br>
+        <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="/assets/80x15.png" /></a><br />The content on this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        Raspberry Pi is a trademark of the <a href="https://www.raspberrypi.org/">Raspberry Pi Foundation</a>
+      </ul>
+    </div>
+
+  </div>
+  
+
+</footer>
+</body>
+
+</html>

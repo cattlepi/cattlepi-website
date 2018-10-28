@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://cattlepi.com/feed.xml" title="CattlePi" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">CattlePi</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/howto/">HowTo</a><a class="page-link" href="/flow/">Boot Flow</a><a class="page-link" href="/images/">Images</a><a class="page-link" href="/api/">Api</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Setting up Pi-Hole via the prebuild image</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2018-10-11T00:00:00-07:00" itemprop="datePublished">Oct 11, 2018
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>In a <a href="/2018/08/21/pihole-and-usercode.html">previous tutorial</a> we learned how to setup our Raspberry Pi to run PiHole by injecting the setup code into the usercode that runs automatically on setup. While this is usefull (and you should leverage the usercode when needed) it also has a few downsides:</p>
+<ul>
+  <li>it’s slow. the whole pihole process can take quite a long time.</li>
+  <li>it’s error prone. A network connectivity issue or any other transient issue (that may not be under your control) means that the pihole setup might fail .</li>
+</ul>
+
+<p><!--more--></p>
+
+<p>Ideally we would want the PiHole to come up as fast and as reliable as possible.<br />
+One of the great things about CattlePi is that you can build your own recipes and you can choose to customize the image that is going to run on the Pi however you want.</p>
+
+<p>We did exactly this for PiHole.<br />
+The PiHole recipe for this is: <a href="https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_pihole.yml">here</a><br />
+To build it, do: <a href="https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25">make raspbian_pihole</a></p>
+
+<p>What does the recipe do?<br />
+It’s based on the raspbian_cattlepi recipe and it adds a few things: <a href="https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/build_pihole.sh">the script</a> that bakes PiHole into the image at build time and <a href="https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/bootstrap_recipe.sh">the script</a> that will update the ip and the interfaces on Pi startup.</p>
+
+<p>The whole recipe is injected into the cattlepi base recipe via the <a href="https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/tasks/preclone_hook_squashfs.yml">preclone_hook_squashfs.yml</a>.</p>
+
+<p>This hook is present in the cattlepi recipe, but <a href="https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_cattlepi/tasks/preclone_hook_squashfs.yml">it does nothing in that context</a>. When using the pihole recipe, the hook gets overwritten and we get the chance to invoke the logic we want without having to build the whole recipe from scratch (which is great because we avoid duplication).</p>
+
+<p>Also, here is an example of device boot target configuration configuration that uses this recipe:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"bootcode"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"autoupdate"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"ssh"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"pi"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"authorized_keys"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="s2">"your ssh public key"</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"initfs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"md5sum"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fc9deaedfb0a2701138535f0878aa752"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/initramfs.tgz"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"rootfs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"md5sum"</span><span class="p">:</span><span class="w"> </span><span class="s2">"e009a7ca757d32f6783745c50e9a2411"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/rootfs.sqsh"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"usercode"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Find the latest image cattlepi pihole image info in the <a href="/images/">Images</a> section.</p>
+
+  </div><a class="u-url" href="/2018/10/11/pihole-image.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name"><li>Contact: <a class="u-email" href="mailto:hello@cattlepi.com">hello@cattlepi.com</a></li><br>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cattlepi</span></a></li><li><a href="https://www.twitter.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">cattlepi</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Based on https://github.com/cattlepi/cattlepi this provides the documentation for api.cattlepi.com that can be used in tandem with the cattlepi project</p>
+      </div>
+    </div>
+
+    <div class="footer-col-center">
+        <ul class="contact-list">
+        <li><a class="page-link" href="/terms/">TermsOfUse</a></li>
+        <li><a class="page-link" href="/privacy/">Privacy</a></li>
+        <br>
+        <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="/assets/80x15.png" /></a><br />The content on this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        Raspberry Pi is a trademark of the <a href="https://www.raspberrypi.org/">Raspberry Pi Foundation</a>
+      </ul>
+    </div>
+
+  </div>
+  
+
+</footer>
+</body>
+
+</html>

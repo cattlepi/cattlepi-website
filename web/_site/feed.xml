@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="https://cattlepi.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://cattlepi.com/" rel="alternate" type="text/html" /><updated>2018-10-11T21:28:30-07:00</updated><id>https://cattlepi.com/</id><title type="html">CattlePi</title><subtitle>Based on https://github.com/cattlepi/cattlepi this provides the documentation for api.cattlepi.com that can be used in tandem with the cattlepi project</subtitle><entry><title type="html">Setting up a Raspbian stock image</title><link href="https://cattlepi.com/2018/10/11/raspbian-stock-image.html" rel="alternate" type="text/html" title="Setting up a Raspbian stock image" /><published>2018-10-11T00:00:00-07:00</published><updated>2018-10-11T00:00:00-07:00</updated><id>https://cattlepi.com/2018/10/11/raspbian-stock-image</id><content type="html" xml:base="https://cattlepi.com/2018/10/11/raspbian-stock-image.html">&lt;p&gt;The basic principle of the CattlePi project is that “&lt;strong&gt;we want to turn your pet projects into cattle projects&lt;/strong&gt;”. This means that, ideally, you would keep zero state on the Raspberry Pi devices in your fleet and you would dynamically figure out what the Pi should be running either at boot time or periodically at runtime.  &lt;br /&gt;
+That’s how we envision you will be using CattlePi.&lt;/p&gt;
+
+&lt;p&gt;That being said there are times when you do want a stock Raspbian install and you do want to leverage Raspbian in exactly the same way you would if you were to write it to the SD card yourself.&lt;/p&gt;
+
+&lt;p&gt;&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;p&gt;Because, at the end of the day, we are pragmatic and we want to enable you to use your Pi however you want we’ve put together a recipe that allows you to write a Raspbian Lite Stock image directly on the SD card.&lt;/p&gt;
+
+&lt;p&gt;CattlePi will control the Pi only long enough to write the image and after that it will hand over the full control to the Stock Raspbian image. (via a reboot)&lt;br /&gt;
+If you’ve used something like &lt;a href=&quot;https://etcher.io/&quot;&gt;etcher&lt;/a&gt; in the past, you can think about this as &lt;strong&gt;etcher-on-the-fly&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Recipe is: &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_stock.yml&quot;&gt;here&lt;/a&gt;&lt;br /&gt;
+To build it: &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/Makefile#L21&quot;&gt;make raspbian_stock&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;See the PR that implemented this feature &lt;a href=&quot;https://github.com/cattlepi/cattlepi/pull/45&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The important bits are at the end.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;For completeness, here is how is the stock raspbian we are laying down different from what you would get via something like etcher:&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;the root partition is not expanded (raspbian does this on first boot via a somewhat shady mechanism: it point the kernel init to the resize script). The init based script also assumes (reasonable assumption) that the rootfs partition is going to be the last partition. We don’t have this limitation&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;as mentioned before we install jq&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;we run the bootstrap script that allows us to inject the ssh keys (if any) and run the usercode (if any). So this way we can take control over the pi running the stock raspbian via the device boot configuration.&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;So you’ll get the same as stock raspbian with the 3 mentioned differences. 
+You need the sd card to be in a compatible layout (compatible layout means at least 2 partitions, the first one being a FAT partition (type b), and the 2nd one being a linux partition (type 83) + the sdcard needs to have a dos mbr) or you need to associate the proper sdlayout to enable it. More on sdlayout in this &lt;a href=&quot;/2018/09/23/sdcard-layout.html&quot;&gt;previous tutorial&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Also, here is an example of device boot target configuration configuration that uses this recipe:&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;autoupdate&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;sdlayout&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;bGFiZWw6IGRvcwpkZXZpY2U6IC9kZXYvbW1jYmxrMAp1bml0OiBzZWN0b3JzCgovZGV2L21tY2JsazBwMSA6IHN0YXJ0PSAgICAgICAgMjA0OCwgc2l6ZT0gICAgIDgxOTIwMDAsIHR5cGU9YgovZGV2L21tY2JsazBwMiA6IHN0YXJ0PSAgICAgODE5NDA0OCwgc2l6ZT0gICAgMTg0MzIwMDAsIHR5cGU9ODMK&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;ssh&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pi&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;authorized_keys&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+          &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;your ssh public key&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;ab926ee004f75f95a74e248669b514ec&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-stock/2018-06-29/v8/initramfs.tgz&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;beb384432a55688d82575df40c8daeed&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-stock/2018-06-29/v8/rootfs.sqsh&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The decoded (valid in this case) sdlayout is:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;label: dos
+device: /dev/mmcblk0
+unit: sectors
+
+/dev/mmcblk0p1 : &lt;span class=&quot;nv&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;        2048, &lt;span class=&quot;nv&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;     8192000, &lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;b
+/dev/mmcblk0p2 : &lt;span class=&quot;nv&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;     8194048, &lt;span class=&quot;nv&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;    18432000, &lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;83
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Final note: inside a booted Pi that successfully wrote the stock raspbian to sd card and rebooted you will find a script &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_stock/resources/bin/restore_cattlepi.sh&quot;&gt;&lt;strong&gt;/etc/cattlepi/restore_cattlepi.sh&lt;/strong&gt;&lt;/a&gt; that you can use if you ever want to revert this Pi to being managed by CattlePi. 
+Should you ever want to revert make sure you have an up-to-date device boot target config and run this script with root priviledges.&lt;/p&gt;
+
+&lt;p&gt;Find the &lt;em&gt;latest&lt;/em&gt; raspbian stock image info in the &lt;a href=&quot;/images/&quot;&gt;Images&lt;/a&gt; section.&lt;/p&gt;</content><author><name></name></author><summary type="html">The basic principle of the CattlePi project is that “we want to turn your pet projects into cattle projects”. This means that, ideally, you would keep zero state on the Raspberry Pi devices in your fleet and you would dynamically figure out what the Pi should be running either at boot time or periodically at runtime. That’s how we envision you will be using CattlePi. That being said there are times when you do want a stock Raspbian install and you do want to leverage Raspbian in exactly the same way you would if you were to write it to the SD card yourself.</summary></entry><entry><title type="html">Setting up Pi-Hole via the prebuild image</title><link href="https://cattlepi.com/2018/10/11/pihole-image.html" rel="alternate" type="text/html" title="Setting up Pi-Hole via the prebuild image" /><published>2018-10-11T00:00:00-07:00</published><updated>2018-10-11T00:00:00-07:00</updated><id>https://cattlepi.com/2018/10/11/pihole-image</id><content type="html" xml:base="https://cattlepi.com/2018/10/11/pihole-image.html">&lt;p&gt;In a &lt;a href=&quot;/2018/08/21/pihole-and-usercode.html&quot;&gt;previous tutorial&lt;/a&gt; we learned how to setup our Raspberry Pi to run PiHole by injecting the setup code into the usercode that runs automatically on setup. While this is usefull (and you should leverage the usercode when needed) it also has a few downsides:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;it’s slow. the whole pihole process can take quite a long time.&lt;/li&gt;
+  &lt;li&gt;it’s error prone. A network connectivity issue or any other transient issue (that may not be under your control) means that the pihole setup might fail .&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;p&gt;Ideally we would want the PiHole to come up as fast and as reliable as possible.&lt;br /&gt;
+One of the great things about CattlePi is that you can build your own recipes and you can choose to customize the image that is going to run on the Pi however you want.&lt;/p&gt;
+
+&lt;p&gt;We did exactly this for PiHole.&lt;br /&gt;
+The PiHole recipe for this is: &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_pihole.yml&quot;&gt;here&lt;/a&gt;&lt;br /&gt;
+To build it, do: &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25&quot;&gt;make raspbian_pihole&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;What does the recipe do?&lt;br /&gt;
+It’s based on the raspbian_cattlepi recipe and it adds a few things: &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/build_pihole.sh&quot;&gt;the script&lt;/a&gt; that bakes PiHole into the image at build time and &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/bootstrap_recipe.sh&quot;&gt;the script&lt;/a&gt; that will update the ip and the interfaces on Pi startup.&lt;/p&gt;
+
+&lt;p&gt;The whole recipe is injected into the cattlepi base recipe via the &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/tasks/preclone_hook_squashfs.yml&quot;&gt;preclone_hook_squashfs.yml&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;This hook is present in the cattlepi recipe, but &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_cattlepi/tasks/preclone_hook_squashfs.yml&quot;&gt;it does nothing in that context&lt;/a&gt;. When using the pihole recipe, the hook gets overwritten and we get the chance to invoke the logic we want without having to build the whole recipe from scratch (which is great because we avoid duplication).&lt;/p&gt;
+
+&lt;p&gt;Also, here is an example of device boot target configuration configuration that uses this recipe:&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;autoupdate&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;ssh&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pi&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;authorized_keys&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+          &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;your ssh public key&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;fc9deaedfb0a2701138535f0878aa752&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/initramfs.tgz&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;e009a7ca757d32f6783745c50e9a2411&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/rootfs.sqsh&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Find the latest image cattlepi pihole image info in the &lt;a href=&quot;/images/&quot;&gt;Images&lt;/a&gt; section.&lt;/p&gt;</content><author><name></name></author><summary type="html">In a previous tutorial we learned how to setup our Raspberry Pi to run PiHole by injecting the setup code into the usercode that runs automatically on setup. While this is usefull (and you should leverage the usercode when needed) it also has a few downsides: it’s slow. the whole pihole process can take quite a long time. it’s error prone. A network connectivity issue or any other transient issue (that may not be under your control) means that the pihole setup might fail .</summary></entry><entry><title type="html">Modifying the SD Card layout</title><link href="https://cattlepi.com/2018/09/23/sdcard-layout.html" rel="alternate" type="text/html" title="Modifying the SD Card layout" /><published>2018-09-23T00:00:00-07:00</published><updated>2018-09-23T00:00:00-07:00</updated><id>https://cattlepi.com/2018/09/23/sdcard-layout</id><content type="html" xml:base="https://cattlepi.com/2018/09/23/sdcard-layout.html">&lt;p&gt;CattlePi does not really care about the way the SD card is partition and formatted. As long as your Pis boot and there is enough space on the boot partition to cache the CattlePi images you should be good (usually the first partition, needs to be FAT and it’s recommended that it has 1G+ of space so that there is enough room to cache the images).&lt;/p&gt;
+
+&lt;p&gt;That being said, in a particular setup you may care about how the card is partitioned. We’ve made it easy by adding a configuration option that (if present) will alter the SD card layout to whatever is specified in there.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;&lt;strong&gt;WARNING: Whenever you specify the option you will lose any data on the SD Card. Please backup important data you may have and/or choose to use an empty SD Card.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The option you can specify in the config is called sdlayout and is nested under the config key in the device boot configuration.&lt;/p&gt;
+
+&lt;p&gt;A sample configuration:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;sdlayout&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;bGFiZWw6IGRvcwpkZXZpY2U6IC9kZXYvbW1jYmxrMAp1bml0OiBzZWN0b3JzCgovZGV2L21tY2JsazBwMSA6IHN0YXJ0PSAgICAgICAgMjA0OCwgc2l6ZT0gICAgIDgxOTIwMDAsIHR5cGU9YgovZGV2L21tY2JsazBwMiA6IHN0YXJ0PSAgICAgODE5NDA0OCwgc2l6ZT0gICAgMTAyNDAwMDAsIHR5cGU9ODMKL2Rldi9tbWNibGswcDMgOiBzdGFydD0gICAgMTg0MzQwNDgsIHNpemU9ICAgIDEzMzEyMDAwLCB0eXBlPTgzCi9kZXYvbW1jYmxrMHA0IDogc3RhcnQ9ICAgIDMxNzQ2MDQ4LCBzaXplPSAgICAgNDA5NjAwMCwgdHlwZT1iCg==&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;ssh&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;s2&quot;&gt;&quot;pi&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;authorized_keys&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;&amp;lt;your key here&amp;gt;&amp;gt;&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;aac02886e82573e19d1f3ecf62a9f760&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/initramfs.tgz&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;e43fe03f9fb64f8814904e76990d4104&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/rootfs.sqsh&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;As you may notice, the value associated with the key is base64 encoded (the same way bootcode and usercode are base64 encoded if present).&lt;br /&gt;
+In this case, decoding the sdlayout value yields:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;label: dos
+device: /dev/mmcblk0
+unit: sectors
+
+/dev/mmcblk0p1 : &lt;span class=&quot;nv&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;        2048, &lt;span class=&quot;nv&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;     8192000, &lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;b
+/dev/mmcblk0p2 : &lt;span class=&quot;nv&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;     8194048, &lt;span class=&quot;nv&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;    10240000, &lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;83
+/dev/mmcblk0p3 : &lt;span class=&quot;nv&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;    18434048, &lt;span class=&quot;nv&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;    13312000, &lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;83
+/dev/mmcblk0p4 : &lt;span class=&quot;nv&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;    31746048, &lt;span class=&quot;nv&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;     4096000, &lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;b
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The format is the one the sfdisk command line utility uses. &lt;a href=&quot;https://manpages.debian.org/stretch/util-linux/sfdisk.8.en.html&quot;&gt;More here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;This means that you can partition a prototype SD card using whatever tools you want, dump and base64 encode the configuration and after that use it on any number of Pis that have the same size SD card and it will just work out of the box for you.&lt;/p&gt;
+
+&lt;p&gt;A few clarifications:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;the CattlePi initramfs scripts will apply the sd config for you and preserve what’s on the boot partition, but the first partition needs to be a FAT partition (type=b). Using a different partition type may mean that your Pi will not boot.&lt;/li&gt;
+  &lt;li&gt;after the layout is performed, partitions with type=b will be formatted as FAT32 and partition with type=83 will be formatted as ext4.&lt;/li&gt;
+  &lt;li&gt;once a layout is correctly done, the CattlePi boot process will not attempt to redo the layout (runs once - we want prevent situation in which you want to tweak things and/or expand partition and the layout would kill your modifications on next boot). If you want to re-run, you need to remove the /boot/sdlayout.json file (where /boot mounted on /dev/mmcblk0p1)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Full details on how this works in &lt;a href=&quot;https://github.com/cattlepi/cattlepi/pull/31&quot;&gt;the PR that implements it&lt;/a&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">CattlePi does not really care about the way the SD card is partition and formatted. As long as your Pis boot and there is enough space on the boot partition to cache the CattlePi images you should be good (usually the first partition, needs to be FAT and it’s recommended that it has 1G+ of space so that there is enough room to cache the images). That being said, in a particular setup you may care about how the card is partitioned. We’ve made it easy by adding a configuration option that (if present) will alter the SD card layout to whatever is specified in there.</summary></entry><entry><title type="html">Autoupdating (Images/Configuration)</title><link href="https://cattlepi.com/2018/09/23/autoupdate.html" rel="alternate" type="text/html" title="Autoupdating (Images/Configuration)" /><published>2018-09-23T00:00:00-07:00</published><updated>2018-09-23T00:00:00-07:00</updated><id>https://cattlepi.com/2018/09/23/autoupdate</id><content type="html" xml:base="https://cattlepi.com/2018/09/23/autoupdate.html">&lt;p&gt;The device boot configuration supports specifying a boolean autoupdate flag. When set to true, a cronjob injected into the image will monitor the api for configuration changes and will reboot the device whenever a change is detected. Upon reboot the device will pick up and use the new configuration.&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;For our account (you’ll need to use your own api key to actually have this work) let’s inspect the current device boot configuration:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-fsSL&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; https://api.cattlepi.com/boot/default/config | jq &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;ssh&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;s2&quot;&gt;&quot;pi&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;authorized_keys&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+            &lt;span class=&quot;s2&quot;&gt;&quot;ssh-rsa actual_base64_encodedkey email@test.com&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;aac02886e82573e19d1f3ecf62a9f760&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/initramfs.tgz&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;e43fe03f9fb64f8814904e76990d4104&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/rootfs.sqsh&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, let’s add the autoupdate flag:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;PAYLOAD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'{&quot;config&quot;:{&quot;autoupdate&quot;:&quot;true&quot;,&quot;ssh&quot;:{&quot;pi&quot;:{&quot;authorized_keys&quot;:[&quot;'&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.ssh/id_rsa.pub&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&quot;]}}},&quot;initfs&quot;:{&quot;md5sum&quot;:&quot;aac02886e82573e19d1f3ecf62a9f760&quot;,&quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/initramfs.tgz&quot;},&quot;rootfs&quot;:{&quot;md5sum&quot;: &quot;e43fe03f9fb64f8814904e76990d4104&quot;,&quot;url&quot;: &quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/rootfs.sqsh&quot;}}'&lt;/span&gt;
+curl &lt;span class=&quot;nt&quot;&gt;-vvv&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-X&lt;/span&gt; POST &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PAYLOAD&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    https://api.cattlepi.com/boot/default/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now the device is configured to autoupdate. Because it was not before we will need to reboot it for it to become aware of the configuration and to monitor it from now on.&lt;/p&gt;
+
+&lt;p&gt;The configuration is now:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;autoupdate&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;true&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;ssh&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;s2&quot;&gt;&quot;pi&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;authorized_keys&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+            &lt;span class=&quot;s2&quot;&gt;&quot;ssh-rsa actual_base64_encodedkey email@test.com&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;aac02886e82573e19d1f3ecf62a9f760&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/initramfs.tgz&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;e43fe03f9fb64f8814904e76990d4104&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v7/rootfs.sqsh&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;From this point on, any change you do to the configuration will trigger a device reboot. This is useful in the case that you want to update the images used, update the keys used or any tweak to the configuration.&lt;/p&gt;
+
+&lt;p&gt;Full details on how this works in &lt;a href=&quot;https://github.com/cattlepi/cattlepi/pull/25&quot;&gt;the PR that implements it&lt;/a&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">The device boot configuration supports specifying a boolean autoupdate flag. When set to true, a cronjob injected into the image will monitor the api for configuration changes and will reboot the device whenever a change is detected. Upon reboot the device will pick up and use the new configuration.</summary></entry><entry><title type="html">Injecting Code via the BootCode</title><link href="https://cattlepi.com/2018/08/28/hacking-bootcode.html" rel="alternate" type="text/html" title="Injecting Code via the BootCode" /><published>2018-08-28T00:00:00-07:00</published><updated>2018-08-28T00:00:00-07:00</updated><id>https://cattlepi.com/2018/08/28/hacking-bootcode</id><content type="html" xml:base="https://cattlepi.com/2018/08/28/hacking-bootcode.html">&lt;p&gt;This post will help you understand how the bootcode field in the device boot configuration works. It’s similarly to the usercode field we’ve played with in the &lt;a href=&quot;/2018/08/21/pihole-and-usercode.html&quot;&gt;previous tutorial&lt;/a&gt;&lt;/p&gt;
+
+&lt;!--more--&gt;
+&lt;p&gt;So, how is the bootcode different from the usercode?&lt;br /&gt;
+One difference is that it’s running in the boot phase, before the root filesystem is built and while the SD card is still in read/write more.&lt;br /&gt;
+The typical usecase for this would be to alter something in config.txt or cmdline.txt, but because of the stage this runs in, you can pretty much hijack the boot process however you like.&lt;br /&gt;
+You can see the code that handles the bootcode field &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/b30645c02553a009ed961eb1c0f0b108fee4a460/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers#L130&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;For this tutorial we will update the ammount of gpu memory we are allocating for our Pi. For a bit of background, for the Raspberry Pi, the memory is split between the CPU and the GPU. By default the GPU gets 64 megabytes, and the CPU gets what’s left. More details here: &lt;a href=&quot;https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md&quot;&gt;config-txt/memory.md&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;On a Pi that with an factory config.txt let’s look at how much memory the CPU has available:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;free &lt;span class=&quot;nt&quot;&gt;-mt&lt;/span&gt;
+              total        used        free      shared  buff/cache   available
+Mem:            927          68         100         156         757         649
+Swap:             0           0           0
+Total:          927          68         100
+pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;vcgencmd get_mem arm
+&lt;span class=&quot;nv&quot;&gt;arm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;948M
+pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;vcgencmd get_mem gpu
+&lt;span class=&quot;nv&quot;&gt;gpu&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;76M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In case you’re wondering the disconnect between the number reported by free and the get_mem arm is normal. You can use dmesg to see available memory vs total memory (and things that get free later in the process).&lt;/p&gt;
+
+&lt;p&gt;We’re going to alter the &lt;strong&gt;gpu_mem&lt;/strong&gt; option and set the memory the gpu uses to the minimum allowable (16).&lt;br /&gt;
+You can see a way to achieve this here: &lt;a href=&quot;https://github.com/cattlepi/cattlepi-samples/blob/074273edd6f37e5d99c99f5fe4fea2583ce84ee7/bootcode/mingpu.sh&quot;&gt;mingpu.sh&lt;/a&gt;. It’s pretty straighfoward with the trick being that the script can be executed on each boot and will only have any effect only if it wasn’t run before.&lt;/p&gt;
+
+&lt;p&gt;Like we did in the case of the bootcode, we are going to configure the device boot configuration to retrieve and run this code. Remember that the bootcode is base64 encoded.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;BOOTCODE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'curl -sSL https://raw.githubusercontent.com/cattlepi/cattlepi-samples/master/bootcode/mingpu.sh | /bin/sh'&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; 0&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;PAYLOAD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'{&quot;bootcode&quot;:&quot;'&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BOOTCODE&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&quot;,&quot;config&quot;:{&quot;ssh&quot;:{&quot;pi&quot;:{&quot;authorized_keys&quot;:[&quot;'&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.ssh/id_rsa.pub&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&quot;]}}},&quot;initfs&quot;:{&quot;md5sum&quot;:&quot;52a4b9c7be7850ce0d959244bfdee292&quot;, &quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/initramfs.tgz&quot;},&quot;rootfs&quot;:{&quot;md5sum&quot;:&quot;015615fdacb170c158ea5c20a959ceaf&quot;,&quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/rootfs.sqsh&quot;}}'&lt;/span&gt;
+curl &lt;span class=&quot;nt&quot;&gt;-vvv&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-X&lt;/span&gt; POST &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PAYLOAD&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    https://api.cattlepi.com/boot/default/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;A small difference that you might notice is that instead of piping to bash we are piping to /bin/sh. Technically the environment we are running at the point not have a full bash shell, but it should be capable of executing this script. (if curious the shell is ash and it’s brought in by busybox).&lt;/p&gt;
+
+&lt;p&gt;After changing the device config and rebooting, let’s run the same command as before:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;free &lt;span class=&quot;nt&quot;&gt;-mt&lt;/span&gt;
+              total        used        free      shared  buff/cache   available
+Mem:            976          54         129         165         792         702
+Swap:             0           0           0
+Total:          976          54         129
+pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;vcgencmd get_mem arm
+&lt;span class=&quot;nv&quot;&gt;arm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;998M
+pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;vcgencmd get_mem gpu
+&lt;span class=&quot;nv&quot;&gt;gpu&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;16M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To sum up: we’ve written a small shell script that we’ve injected into the bootcode field. Upon boot, this script alters the memory made available to the GPU to 16M. Remember that this is a demo of the kind of things you can do by injecting code via the bootcode field as the device is booting. You are free to change anything that happens in the boot stage.&lt;/p&gt;
+
+&lt;p&gt;If the script you want to use is buggy/needs work and your Pi crashes while it boots up, here are a few pointers to help you:&lt;br /&gt;
+&lt;strong&gt;1)&lt;/strong&gt; attach a keyboard and a monitor to the Pi and use the &lt;em&gt;break=&lt;/em&gt; kernel param as described here: https://wiki.debian.org/InitramfsDebug (you would put this in the cmdline.txt file)&lt;br /&gt;
+&lt;strong&gt;2)&lt;/strong&gt;  another technique involves setting the &lt;em&gt;boot_delay=&lt;/em&gt; kernel param (see https://www.kernel.org/doc/html/v4.14/admin-guide/kernel-parameters.html) This will allow you to slow down the boot to a point where you can observe things.&lt;br /&gt;
+&lt;strong&gt;3)&lt;/strong&gt; Have your script log and/or have pauses in it for you to be able to better understand what’s going on.&lt;/p&gt;
+
+&lt;p&gt;You can use any combination of the above or you can invent your own technique. Happy hacking.&lt;/p&gt;</content><author><name></name></author><summary type="html">This post will help you understand how the bootcode field in the device boot configuration works. It’s similarly to the usercode field we’ve played with in the previous tutorial</summary></entry><entry><title type="html">Setting up Pi-Hole via usercode</title><link href="https://cattlepi.com/2018/08/21/pihole-and-usercode.html" rel="alternate" type="text/html" title="Setting up Pi-Hole via usercode" /><published>2018-08-21T00:00:00-07:00</published><updated>2018-08-21T00:00:00-07:00</updated><id>https://cattlepi.com/2018/08/21/pihole-and-usercode</id><content type="html" xml:base="https://cattlepi.com/2018/08/21/pihole-and-usercode.html">&lt;p&gt;This post will help you understand how the usercode field in the device boot configuration works. In the process of demostrating how this works, we will also show you how you could setup Pi-Hole by using this feature.&lt;/p&gt;
+
+&lt;!--more--&gt;
+&lt;p&gt;We assume that you’ve already gone through the &lt;a href=&quot;/2018/08/10/hello-cattlepi.html&quot;&gt;Hello CattlePi Tutorial&lt;/a&gt; and have your account and default boot target config.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;First thing&lt;/strong&gt; first: What is Pi-Hole? You can check out the &lt;a href=&quot;https://pi-hole.net/&quot;&gt;project on its official page&lt;/a&gt; or on its &lt;a href=&quot;https://en.wikipedia.org/wiki/Pi-hole&quot;&gt;wikipedia page&lt;/a&gt;. In a nutshell, it’s a DNS sinkhole that sits between you and the real DNS servers and selectively blacklists domains known to be used by ad networks. The net effect of this is that you will not see ads originating on those subdomains (and a nice side effect is that you will experience faster browsing speeds).&lt;/p&gt;
+
+&lt;p&gt;Pi-Hole is an extermely efficient way of leveraging a Raspberry Pi to do network level ad-blocking in your home network. You setup the Pi, you configure the router to use its IP as the DNS server and you’re mostly done.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Second&lt;/strong&gt;: What is usercode?&lt;br /&gt;
+Let’s take another look at device boot config.&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;52a4b9c7be7850ce0d959244bfdee292&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/initramfs.tgz&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;015615fdacb170c158ea5c20a959ceaf&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/rootfs.sqsh&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;It turns out that you can use the &lt;strong&gt;usercode&lt;/strong&gt; field to pass in a script that your Raspberry Pi will run once the boot process is finished. You can see the code here that does this &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/37a3646ead437cd8d3765ffcec8fe45086e4567c/templates/raspbian/resources/bin/bootstrap.sh#L26&quot;&gt;here&lt;/a&gt;&lt;br /&gt;
+You can see the bootstrap being inserted in rc.local &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/b30645c02553a009ed961eb1c0f0b108fee4a460/templates/raspbian/tasks/squashfs.yml#L23&quot;&gt;right before the end of it&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;How does a script that you can insert in there look like? It’s any script you want with the caveats that 1) you have to base64 encode it 2) for api.cattlepi.com the maximum body size of any request is 4096 (this includes everything in the json, so your script is probably less than this). It may seem like a big limitation, but in reality your script could download (from another location) and execute a script of any size - so you can work around this limitation pretty easily.&lt;/p&gt;
+
+&lt;p&gt;Now, to put the 2 together. We want to write a script that performs an unattended Pi-Hole install via the usercode.&lt;br /&gt;
+You can one way of doing this here: 
+&lt;a href=&quot;https://github.com/cattlepi/cattlepi-samples/blob/master/pihole-via-usercode/piholeup.sh&quot;&gt;https://github.com/cattlepi/cattlepi-samples/blob/master/pihole-via-usercode/piholeup.sh&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;The code is pretty self explanatory. It generates 2 configuration files needed by the Pi-Hole install and after that it triggers the Pi-Hole unattended install.&lt;br /&gt;
+If we were to run this manually we would do (using root or sudo) something like this:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-sSL&lt;/span&gt; https://raw.githubusercontent.com/cattlepi/cattlepi-samples/master/pihole-via-usercode/piholeup.sh | bash
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;What we’re going to do is base64 encode this and put in in the usercode field in the boot device config.&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;USERCODE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'curl -sSL https://raw.githubusercontent.com/cattlepi/cattlepi-samples/master/pihole-via-usercode/piholeup.sh | bash'&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; 0&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;PAYLOAD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'{&quot;usercode&quot;:&quot;'&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$USERCODE&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&quot;,&quot;config&quot;:{&quot;ssh&quot;:{&quot;pi&quot;:{&quot;authorized_keys&quot;:[&quot;'&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.ssh/id_rsa.pub&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&quot;]}}},&quot;initfs&quot;:{&quot;md5sum&quot;:&quot;52a4b9c7be7850ce0d959244bfdee292&quot;, &quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/initramfs.tgz&quot;},&quot;rootfs&quot;:{&quot;md5sum&quot;:&quot;015615fdacb170c158ea5c20a959ceaf&quot;,&quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v5/rootfs.sqsh&quot;}}'&lt;/span&gt;
+curl &lt;span class=&quot;nt&quot;&gt;-vvv&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-X&lt;/span&gt; POST &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PAYLOAD&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    https://api.cattlepi.com/boot/default/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To verify the device config we can do:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    https://api.cattlepi.com/boot/default/config | jq &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To verify that the usercode was properly encodede we can do:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    https://api.cattlepi.com/boot/default/config | jq &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; .usercode | &lt;span class=&quot;nb&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The output should match the command above:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-sSL&lt;/span&gt; https://raw.githubusercontent.com/cattlepi/cattlepi-samples/master/pihole-via-usercode/piholeup.sh | bash
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s now boot a Pi configured to use out API key.&lt;br /&gt;
+If you connect to the Pi you can also watch the progress by tailing /tmp/bootstrap.log&lt;/p&gt;
+
+&lt;p&gt;After the process is done, you should be able to load the Pi-Hole web interface by going to &lt;strong&gt;http://192.168.1.87/admin/&lt;/strong&gt; (make sure to replace 192.168.1.87 with your own Pi IP). In case you’re wondering &lt;em&gt;WEBPASSWORD=4b20c060f40545f80ab87081c3c91842b8c30a2ea7c9b2f4ee9094b70c96fd61&lt;/em&gt; that was &lt;a href=&quot;https://github.com/cattlepi/cattlepi-samples/blob/master/pihole-via-usercode/piholeup.sh#L52&quot;&gt;setup&lt;/a&gt; by the installation script is actually a hash of the password &lt;strong&gt;newpassword&lt;/strong&gt;. To make a long story short here is how this was generated:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; newpassword | &lt;span class=&quot;nb&quot;&gt;sha256sum&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{printf &quot;%s&quot;,$1 }'&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;sha256sum&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;cut&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;' '&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; 1
+4b20c060f40545f80ab87081c3c91842b8c30a2ea7c9b2f4ee9094b70c96fd61
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Remember this is just a demo, and you should probably replace this with your own password and maybe place the script on a host that you control.&lt;/p&gt;
+
+&lt;p&gt;For completeness, let’s also check that the Pi-Hole is resolving other DNS names:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dig +short cattlepi.com @192.168.1.87
+52.84.16.11
+52.84.16.64
+52.84.16.54
+52.84.16.117
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Success! You should also see the query in the query log web interface.&lt;/p&gt;
+
+&lt;p&gt;The only thing left to do is to point update the DNS entries your router provides to point to your CattlePi-enabled Pi-Hole Raspberry Pi.&lt;br /&gt;
+You’ve now seen how to inject your own scripts that run in the Pi bootstrap process.&lt;/p&gt;</content><author><name></name></author><summary type="html">This post will help you understand how the usercode field in the device boot configuration works. In the process of demostrating how this works, we will also show you how you could setup Pi-Hole by using this feature.</summary></entry><entry><title type="html">Connecting through SSH</title><link href="https://cattlepi.com/2018/08/11/ssh-on.html" rel="alternate" type="text/html" title="Connecting through SSH" /><published>2018-08-11T00:00:00-07:00</published><updated>2018-08-11T00:00:00-07:00</updated><id>https://cattlepi.com/2018/08/11/ssh-on</id><content type="html" xml:base="https://cattlepi.com/2018/08/11/ssh-on.html">&lt;p&gt;This post will show you how to connect to a cattlepi managed device using SSH.
+We assume that you’ve already gone through the &lt;a href=&quot;/2018/08/10/hello-cattlepi.html&quot;&gt;Hello CattlePi Tutorial&lt;/a&gt; and have your account and default boot target config.&lt;/p&gt;
+
+&lt;!--more--&gt;
+&lt;p&gt;A few considerations before we get started:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;in the image that you’re using the SSH daemon should be runnign, but it’s configured to not allow password logins (see https://github.com/cattlepi/cattlepi/blob/master/builder/tasks/squashfs.yml#L29). It also does not allow empty passwords or the root user login in (keep in mind that the &lt;strong&gt;pi&lt;/strong&gt; user does have sudo though)&lt;/li&gt;
+  &lt;li&gt;by default we don’t have any ssh keys baked in into the image for the pi used&lt;/li&gt;
+  &lt;li&gt;the host ssh keys are regenerated on boot (if you reboot a cattlepi device the ssh client will complain that the server key has changed - this is normal - actually this is expected)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Now, how do we connect? It turns out that there is a hook in the device configuration that allows you to inject keys that are authorized to connect as the pi user (technically inject public keys and need to separately have the private key).&lt;/p&gt;
+
+&lt;p&gt;The code responsible for this is &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/2c2d2100c8538f8df34adb31c1db1c2004f152da/templates/raspbian/resources/bin/bootstrap.sh#L12&quot;&gt;here&lt;/a&gt;.&lt;br /&gt;
+You can observe that if an array is present at &lt;strong&gt;config.ssh.pi.authorized_keys&lt;/strong&gt; in the configuration that is served to the device, each element in that array will get injected into the authorized keys. 
+In the &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/server/server.py#L44&quot;&gt;demo server&lt;/a&gt; we see one way you can generate the config. For the sake of simplicity and brevity we will do this using api.cattlepi.com and we will update the config via curl.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;PAYLOAD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'{&quot;config&quot;:{&quot;ssh&quot;:{&quot;pi&quot;:{&quot;authorized_keys&quot;:[&quot;'&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.ssh/id_rsa.pub&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&quot;]}}},&quot;initfs&quot;:{&quot;md5sum&quot;:&quot;8e0e2870637e77462b40b8fe67c6d91b&quot;, &quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz&quot;},&quot;rootfs&quot;:{&quot;md5sum&quot;:&quot;0826222b56df3d074fa4b21fd4b9d891&quot;,&quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh&quot;}}'&lt;/span&gt;
+curl &lt;span class=&quot;nt&quot;&gt;-vvv&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-X&lt;/span&gt; POST &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PAYLOAD&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    https://api.cattlepi.com/boot/default/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The payload is the same with the exception that the authorized keys are now injected. Notice how the id_rsa.pub is picked up and injected in the config. You can inject any keys you want - this serves as an example. You can also have multiple keys as authorized_keys is an array.&lt;/p&gt;
+
+&lt;p&gt;To retrieve the config and inspect it:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;ssh&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;s2&quot;&gt;&quot;pi&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;authorized_keys&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;ssh-rsa actual_base64_encodedkey email@test.com&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;8e0e2870637e77462b40b8fe67c6d91b&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;0826222b56df3d074fa4b21fd4b9d891&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, reboot the Pi and attempt connecting to it:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ssh pi@192.168.1.87
+The authenticity of host '192.168.1.87 (192.168.1.87)' can't be established.
+ECDSA key fingerprint is SHA256:GxIl+YtmQjC5y6ri/KGhYy4j9AbUzx5slQsIpIk0bt0.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.1.87' (ECDSA) to the list of known hosts.
+Linux raspberrypi 4.14.52-v7+ #1123 SMP Wed Jun 27 17:35:49 BST 2018 armv7l
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Sat Aug 11 04:45:02 2018 from 192.168.1.166
+pi@raspberrypi:~$
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You can not connect to the device. 
+While we are here let’s take a look in /cattlepi dir:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;ls&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-lah&lt;/span&gt; /cattlepi/
+total 16K
+drwxr-xr-x 1 root root  120 Aug 11 20:32 &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+drwxr-xr-x 1 root root  160 Aug 11 20:32 ..
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root   37 Aug 11 20:32 apikey
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root   25 Aug 11 20:32 base
+&lt;span class=&quot;nt&quot;&gt;-rw-r--r--&lt;/span&gt; 1 root root   30 Aug 11 20:32 base_relative_config
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 1.2K Aug 11 20:32 config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /cattlepi/apikey 
+8db071a4-63ef-47f7-9cfc-ca479b5422da
+pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /cattlepi/base
+https://api.cattlepi.com
+pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /cattlepi/base_relative_config 
+boot/b8:27:eb:6c:33:e2/config
+pi@raspberrypi:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /cattlepi/config | jq &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;ssh&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;s2&quot;&gt;&quot;pi&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;authorized_keys&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;ssh-rsa actual_base64_encodedkey email@test.com&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;8e0e2870637e77462b40b8fe67c6d91b&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;0826222b56df3d074fa4b21fd4b9d891&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You can see what your api key is, you can see the api endpoint and the configuration from within the running Pi.&lt;/p&gt;</content><author><name></name></author><summary type="html">This post will show you how to connect to a cattlepi managed device using SSH. We assume that you’ve already gone through the Hello CattlePi Tutorial and have your account and default boot target config.</summary></entry><entry><title type="html">Hello CattlePi - getting started with api.cattlepi.com</title><link href="https://cattlepi.com/2018/08/10/hello-cattlepi.html" rel="alternate" type="text/html" title="Hello CattlePi - getting started with api.cattlepi.com" /><published>2018-08-10T00:00:00-07:00</published><updated>2018-08-10T00:00:00-07:00</updated><id>https://cattlepi.com/2018/08/10/hello-cattlepi</id><content type="html" xml:base="https://cattlepi.com/2018/08/10/hello-cattlepi.html">&lt;p&gt;This post will show you how to get started with cattlepi.
+We assume you already have a &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/doc/FAQ.md#what-types-of-hardware-does-this-work-on&quot;&gt;supported&lt;/a&gt; Raspberry Pi and an empty SD card you can use.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;p&gt;We also asume that the Pi is on a network in which it will receive an IP Address through DHCP and will be have internet connectivity (assuming network is correctly configured on the PI)&lt;/p&gt;
+
+&lt;h1 id=&quot;step-1---downloading-the-bootstrap-cattlepi-image&quot;&gt;Step 1 - Downloading the bootstrap cattlepi image&lt;/h1&gt;
+&lt;p&gt;Follow the instructions here: &lt;a href=&quot;https://github.com/cattlepi/cattlepi#quickstart&quot;&gt;https://github.com/cattlepi/cattlepi#quickstart&lt;/a&gt;&lt;br /&gt;
+In normal operation you should not need a monitor (ie your Pi can run headless) but it’s recommended to have one for the first boot so that you can observe the process.&lt;/p&gt;
+
+&lt;p&gt;After the boot the card will have the latest &lt;strong&gt;initfs&lt;/strong&gt; and &lt;strong&gt;rootfs&lt;/strong&gt; images that are configured for the default device for the demo api key (ie &lt;strong&gt;deadbeef&lt;/strong&gt;).&lt;br /&gt;
+To see what those are visit or curl the following link: &lt;a href=&quot;https://api.cattlepi.com/boot/default/config?apiKey=deadbeef&quot;&gt;https://api.cattlepi.com/boot/default/config?apiKey=deadbeef&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Sample curl request:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; https://api.cattlepi.com/boot/default/config?apiKey&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;deadbeef | jq &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Sample output (may vary at a later point in the future):&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;8e0e2870637e77462b40b8fe67c6d91b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;0826222b56df3d074fa4b21fd4b9d891&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;You can observe the images that are used under the &lt;em&gt;initfs.url&lt;/em&gt; and &lt;em&gt;rootfs.url&lt;/em&gt; keys. These are the images that will get downloaded and persisted on the SD card.&lt;/p&gt;
+
+&lt;h1 id=&quot;step-2---requestion-your-own-api-key&quot;&gt;Step 2 - Requestion your own API Key&lt;/h1&gt;
+&lt;p&gt;Using the demo api key is fine, but due to its shared nature you cannot do much with it. To be able to unleash the full possiblities of the API you will need to request your own API Key.&lt;/p&gt;
+
+&lt;p&gt;Head over to the &lt;a href=&quot;/api/&quot;&gt;API&lt;/a&gt; section and request your own API Key.&lt;br /&gt;
+You need to provide a valid email address and after your API Key is assigned you will receive an link with instructions on how to activate it.&lt;/p&gt;
+
+&lt;p&gt;For example, going through process I received and activated the following API Key:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;8db071a4-63ef-47f7-9cfc-ca479b5422da
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;step-3---use-the-new-api-key&quot;&gt;Step 3 - Use the new API Key&lt;/h1&gt;
+&lt;p&gt;Let’s use your API key.&lt;br /&gt;
+There are two ways to do this (either of them works):&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;build your own image as described &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/master/doc/BUILDING.md&quot;&gt;here&lt;/a&gt;. You will need to use your API Key.&lt;/li&gt;
+  &lt;li&gt;update the SDCard to use your API Key&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Since this is a Hello World, we’ll use the latter.&lt;br /&gt;
+Power down the Pi and remove the SDCard. Attach/Mount the SDCard to your machine and let’s inspect the contents.&lt;/p&gt;
+
+&lt;p&gt;In the root of the SDCard we’ll do:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;s &lt;span class=&quot;nt&quot;&gt;-lah&lt;/span&gt;
+total 34M
+drwxr-xr-x 4 root root 4.0K Dec 31  1969 &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+drwxr-xr-x 4 root root 4.0K Aug 10 17:28 ..
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  22K Aug  7 22:37 bcm2708-rpi-0-w.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  22K Aug  7 22:37 bcm2708-rpi-b.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  22K Aug  7 22:37 bcm2708-rpi-b-plus.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  22K Aug  7 22:37 bcm2708-rpi-cm.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  23K Aug  7 22:37 bcm2709-rpi-2-b.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  24K Aug  7 22:37 bcm2710-rpi-3-b.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  25K Aug  7 22:37 bcm2710-rpi-3-b-plus.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  23K Aug  7 22:37 bcm2710-rpi-cm3.dtb
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  51K Aug  7 22:37 bootcode.bin
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  13M Aug  7 22:37 cattleinit.cpio
+drwxr-xr-x 2 root root 4.0K Aug 10 17:53 cattlepi
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  161 Aug  7 22:37 cmdline.txt
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 1.7K Aug  7 22:37 config.txt
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  19K Aug  7 22:37 COPYING.linux
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 2.6K Aug  7 22:37 fixup_cd.dat
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 6.5K Aug  7 22:37 fixup.dat
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 9.7K Aug  7 22:37 fixup_db.dat
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 9.7K Aug  7 22:37 fixup_x.dat
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root   33 Aug 10 17:55 initfs
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  145 Aug  7 22:37 issue.txt
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 4.7M Aug  7 22:37 kernel7.img
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 4.5M Aug  7 22:37 kernel.img
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 1.5K Aug  7 22:37 LICENCE.broadcom
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root  19K Aug  7 22:37 LICENSE.oracle
+drwxr-xr-x 2 root root  12K Aug 10 17:55 overlays
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 660K Aug  7 22:37 start_cd.elf
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 4.9M Aug  7 22:37 start_db.elf
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 2.8M Aug  7 22:37 start.elf
+&lt;span class=&quot;nt&quot;&gt;-rwxr-xr-x&lt;/span&gt; 1 root root 3.9M Aug  7 22:37 start_x.elf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;If this looks terribly familiar to what one would see on a Raspberry Pi under /boot it is because it’s more or less what you would see under boot with a few additions:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;the cattleinit.cpio contains the ramdisk image that is used in the boot process. Because it’s a cpio file you can open it up and inspect the contents. All of the update logic is there.&lt;/li&gt;
+  &lt;li&gt;the cattlepi dir contains the images we are caching and a config file (which is the output of the same earlier curl command)&lt;/li&gt;
+  &lt;li&gt;the initfs file hold the checksum that the &lt;em&gt;initfs&lt;/em&gt; image that resulted in this setup had (this is how the loader know when to update)&lt;/li&gt;
+  &lt;li&gt;the config.txt file (present on all Pis) instructs the bootloaded to load the cattleinit.cpio file in memory, right after the kernel (relevant line is: &lt;em&gt;initramfs cattleinit.cpio followkernel&lt;/em&gt;)&lt;/li&gt;
+  &lt;li&gt;finally the cmdline.txt (passed to the kernel) contains the bootparameters for the kernel&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;cmdline.txt | &lt;span class=&quot;nb&quot;&gt;tr&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot; &quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+dwc_otg.lpm_enable&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0
+&lt;span class=&quot;nv&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;tty1
+&lt;span class=&quot;nv&quot;&gt;boot&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;cattlepi
+&lt;span class=&quot;nv&quot;&gt;cattlepi_base&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;https://api.cattlepi.com
+&lt;span class=&quot;nv&quot;&gt;cattlepi_apikey&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;deadbeef
+&lt;span class=&quot;nv&quot;&gt;initrd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-1&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;elevator&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;deadline
+rw
+rootwait
+&lt;span class=&quot;nv&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;20
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We’ve broken this down into multiple lines to observe it but in the file it’s only 1 line.
+The cattlepi_api tell the what api endpoint we will use. The cattlepi_apikey tells what api key we’re going to use.&lt;/p&gt;
+
+&lt;p&gt;An obvious idea is to update the cattlepi_apikey to use our API key. If you were to update it, unmount the SDCard, insert in into the Pi and boot you would observe this would work. There is one problem though.&lt;/p&gt;
+
+&lt;p&gt;Because the cmdline.txt is part of the image, if your configuration instructs the loaded to pick up another &lt;strong&gt;initfs&lt;/strong&gt; it will get overwritten by whatever is that &lt;strong&gt;initfs&lt;/strong&gt;. So it’s going to work until the next update.&lt;/p&gt;
+
+&lt;p&gt;Fortunatelly there is one place where the API key does not get overwritten. If we have a file named &lt;strong&gt;/cattlepi/apikey&lt;/strong&gt; the API key will be loaded from that file and will override the kernel parameters one (see logic &lt;a href=&quot;https://github.com/cattlepi/cattlepi/blob/2c2d2100c8538f8df34adb31c1db1c2004f152da/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers&quot;&gt;here&lt;/a&gt;)&lt;/p&gt;
+
+&lt;p&gt;In the root of SDcard do:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;bash &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;echo 8db071a4-63ef-47f7-9cfc-ca479b5422da &amp;gt; cattlepi/apikey&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Be sure to replace 8db071a4-63ef-47f7-9cfc-ca479b5422da with your own api key.
+Also be sure to verify that the apikey was properly written:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;cattlepi/apikey 
+8db071a4-63ef-47f7-9cfc-ca479b5422da
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;If everythign looks good unmount the SDCard and place it in the Raspberry Pi.
+Boot is up.&lt;/p&gt;
+
+&lt;h1 id=&quot;step-4---controlling-the-boot-targets-for-your-pi&quot;&gt;Step 4 - Controlling the boot targets for your Pi.&lt;/h1&gt;
+&lt;p&gt;In the previous step you’ve added you requested you own API key and injected it into the SDCard. Power up and boot the Raspberry Pi.&lt;br /&gt;
+You will notice that the Raspberry Pi has issues booting and it fails with a HTTP 404 (ie not found).&lt;br /&gt;
+This happens because you have not configured a boot or default boot target using your API key. Remember https://api.cattlepi.com/boot/default/config at step 1. This was actually the boot configuration for the &lt;strong&gt;default&lt;/strong&gt; target.&lt;/p&gt;
+
+&lt;p&gt;Each Raspberry Pi device that you want to associate with this API Key needs to have an unique id. By default if you don’t specify any the mac address of the hardware is the unique id.&lt;/p&gt;
+
+&lt;p&gt;The when booting the the loader will attempt to go retrieve the configuration from:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https://api.cattlepi.com/boot/&amp;lt;unique_id&amp;gt;/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In the back the API will recognize this and will try to find the config for the specific device. If found it will use that config. If not found it will attempt to locate the default config. If that’s found the default is server. If neither are found you get the 404 that you’re experiencing now.&lt;/p&gt;
+
+&lt;p&gt;Why have a default boot configuration target? The thinking here is that you should be able to connect your devices and have them use a generic boot target without having to worry about their ids. Later, if you want to specialize certain devices to do certain things you can easily inspect a list of deviceids that talked to the API and use them to specialize the devices.&lt;/p&gt;
+
+&lt;p&gt;Right now let’s create a default boot target, using our api key:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-vvv&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Accept: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-X&lt;/span&gt; POST &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{&quot;initfs&quot;:{&quot;md5sum&quot;:&quot;8e0e2870637e77462b40b8fe67c6d91b&quot;, &quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz&quot;},&quot;rootfs&quot;:{&quot;md5sum&quot;:&quot;0826222b56df3d074fa4b21fd4b9d891&quot;,&quot;url&quot;:&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh&quot;}}'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    https://api.cattlepi.com/boot/default/config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;with the response of&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; POST /boot/default/config HTTP/1.1
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; Host: api.cattlepi.com
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; User-Agent: curl/7.47.0
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; Accept: application/json
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; Content-Type: application/json
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; Content-Length: 288
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; 
+&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; upload completely sent off: 288 out of 288 bytes
+&amp;lt; HTTP/1.1 200 OK
+&amp;lt; Date: Sat, 11 Aug 2018 19:08:51 GMT
+&amp;lt; Content-Type: application/json
+&amp;lt; Content-Length: 16
+&amp;lt; Connection: keep-alive
+&amp;lt; x-amzn-RequestId: fb8a93a9-9d99-11e8-a3bd-29cf9684cc5c
+&amp;lt; x-amz-apigw-id: &lt;span class=&quot;nv&quot;&gt;LeUaeEfcPHcFvEg&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;
+&amp;lt; X-Amzn-Trace-Id: &lt;span class=&quot;nv&quot;&gt;Root&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1-5b6f3443-1669693c7e1311e667fe786b&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;Sampled&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0
+&amp;lt; 
+&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; Connection &lt;span class=&quot;c&quot;&gt;#0 to host api.cattlepi.com left intact&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;status&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;ok&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;So now we have a default boot target. To verify this we can do:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; https://api.cattlepi.com/boot/default/config | jq &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;bootcode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;config&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;initfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;8e0e2870637e77462b40b8fe67c6d91b&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;rootfs&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;md5sum&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;0826222b56df3d074fa4b21fd4b9d891&quot;&lt;/span&gt;,
+    &lt;span class=&quot;s2&quot;&gt;&quot;url&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;usercode&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You may be wondering how come the default boot target was there for the demo api key and was not there for our own api key. For all intents and purposes, everything under one API key is isolated. They keys shared the same path as far as the actual API goes but, in the back, they access different data sources. To go even further you could have the same device id (mac) used with multiple api keys and not see any conflicts. This is by design.&lt;/p&gt;
+
+&lt;p&gt;Ok. Back to booting the Pi. Now that we have a default boot target let’s try booting it. You will notice that the Pi boots just fine now (and can retrive its config).&lt;/p&gt;
+
+&lt;p&gt;Before wrapping up, let’s try and see if we can find a list of devices that are active under our API key.&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; https://api.cattlepi.com/track | jq &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;default&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;b8:27:eb:6c:33:e2&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;We’ve talked about the default boot target (ie not a device per se) and our device is &lt;strong&gt;b8:27:eb:6c:33:e2&lt;/strong&gt;&lt;br /&gt;
+To inspect details about a specific device:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da&quot;&lt;/span&gt; https://api.cattlepi.com/track/b8:27:eb:6c:33:e2 | jq &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+  &lt;span class=&quot;s2&quot;&gt;&quot;2018-08-11 19:16:28.124746 BOOT GET&quot;&lt;/span&gt;,
+  &lt;span class=&quot;s2&quot;&gt;&quot;2018-08-11 19:17:43.225184 BOOT GET&quot;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Details on all the supported call are documented in the &lt;a href=&quot;/api/&quot;&gt;API&lt;/a&gt; section.&lt;/p&gt;
+
+&lt;p&gt;This concludes our “Hello World” tour. Have fun turning your pet project into a cattle project.&lt;/p&gt;</content><author><name></name></author><summary type="html">This post will show you how to get started with cattlepi. We assume you already have a supported Raspberry Pi and an empty SD card you can use.</summary></entry></feed>
