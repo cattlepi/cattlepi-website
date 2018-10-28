@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://cattlepi.com/feed.xml" title="CattlePi" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">CattlePi</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/howto/">HowTo</a><a class="page-link" href="/flow/">Boot Flow</a><a class="page-link" href="/images/">Images</a><a class="page-link" href="/api/">Api</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Images</h1>
+  </header>
+
+  <div class="post-content">
+    <p>Currently available images.<br />
+You can reference these (along with the associated md5sum in your device boot configurations).</p>
+
+<h2 id="how-to-translate-this-iamges-into-boot-config">How to translate this iamges into boot config?</h2>
+<p>Translate the given shell variables  into something you can use against the cattlepi api to program the boot target for specific devices.</p>
+
+<p>Example:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">APIKEY</span><span class="o">=</span>your_api_key_goes_here
+<span class="nv">PAYLOAD</span><span class="o">=</span><span class="s1">'{"config":{"autoupdate":true,"ssh":{"pi":{"authorized_keys":["'</span><span class="k">$(</span><span class="nb">head</span> <span class="nt">-1</span> <span class="nv">$HOME</span>/.ssh/id_rsa.pub<span class="k">)</span><span class="s1">'"]}}},"initfs":{"md5sum":"'</span><span class="k">${</span><span class="nv">INITFSMD5</span><span class="k">}</span><span class="s1">'", "url":"'</span><span class="k">${</span><span class="nv">INITFS</span><span class="k">}</span><span class="s1">'"},"rootfs":{"md5sum":"'</span><span class="k">${</span><span class="nv">ROOTFSMD5</span><span class="k">}</span><span class="s1">'","url":"'</span><span class="k">${</span><span class="nv">ROOTFS</span><span class="k">}</span><span class="s1">'"}}'</span>
+curl <span class="nt">-H</span> <span class="s2">"Accept: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"X-Api-Key: </span><span class="nv">$API_KEY</span><span class="s2">"</span> <span class="se">\</span>
+    <span class="nt">-X</span> POST <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$PAYLOAD</span><span class="s2">"</span> <span class="se">\</span>
+    https://api.cattlepi.com/boot/default/config
+</code></pre></div></div>
+
+<h2 id="availble-prebuilt-images">Availble prebuilt images</h2>
+<h3 id="raspbian-strech-lite---cattlepi-build-v8">Raspbian Strech Lite - CattlePi Build (v8)</h3>
+<p>This is the default Cattlepi image <br />
+Recipe for this is: <a href="https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_cattlepi.yml">here</a><br />
+To build this: <a href="https://github.com/cattlepi/cattlepi/blob/master/Makefile#L9">make raspbian_cattlepi</a></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#generated on Sat Sep 29 19:05:35 PDT 2018</span>
+<span class="nv">INITFS</span><span class="o">=</span>https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v8/initramfs.tgz
+<span class="nv">INITFSMD5</span><span class="o">=</span>63523e54a3f49918ac3a9a790154e76f
+<span class="nv">ROOTFS</span><span class="o">=</span>https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v8/rootfs.sqsh
+<span class="nv">ROOTFSMD5</span><span class="o">=</span>5c0318793df00f36244d7ee888f809e7
+</code></pre></div></div>
+
+<h3 id="raspbian-strech---stock-build-v9">Raspbian Strech - Stock Build (v9)</h3>
+<p>This image will write place stock raspbian on your sdcard (need the sd card to be in a compatible layout or you need to associate the proper sdlayout to enable it)<br />
+Recipe for this is: <a href="https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_stock.yml">here</a><br />
+To build this: <a href="https://github.com/cattlepi/cattlepi/blob/master/Makefile#L21">make raspbian_stock</a></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># generated on Sun Oct  7 20:53:31 PDT 2018</span>
+<span class="nv">INITFS</span><span class="o">=</span>https://api.cattlepi.com/images/global/raspbian-stock/2018-06-29/v9/initramfs.tgz
+<span class="nv">INITFSMD5</span><span class="o">=</span>1bc253db8b243c84f2c41b2485d77021
+<span class="nv">ROOTFS</span><span class="o">=</span>https://api.cattlepi.com/images/global/raspbian-stock/2018-06-29/v9/rootfs.sqsh
+<span class="nv">ROOTFSMD5</span><span class="o">=</span>82cf5bda1b2fa2da252ab41d3b28b8d7
+</code></pre></div></div>
+
+<h3 id="raspbian-strech-lite---pihole-v8">Raspbian Strech Lite - Pihole (v8)</h3>
+<p>This image has PiHole baked into it.<br />
+Recipe for this is: <a href="https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_pihole.yml">here</a><br />
+To build this: <a href="https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25">make raspbian_pihole</a></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># generated on Sun Sep 30 22:33:50 PDT 2018</span>
+<span class="nv">INITFS</span><span class="o">=</span>https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/initramfs.tgz
+<span class="nv">INITFSMD5</span><span class="o">=</span>fc9deaedfb0a2701138535f0878aa752
+<span class="nv">ROOTFS</span><span class="o">=</span>https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/rootfs.sqsh
+<span class="nv">ROOTFSMD5</span><span class="o">=</span>e009a7ca757d32f6783745c50e9a2411
+</code></pre></div></div>
+
+<h2 id="build-your-own-images">Build your own images</h2>
+<p>Learn how to build your own images here: <a href="https://github.com/cattlepi/cattlepi/blob/master/doc/BUILDING.md">BUILDING.md</a></p>
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name"><li>Contact: <a class="u-email" href="mailto:hello@cattlepi.com">hello@cattlepi.com</a></li><br>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cattlepi</span></a></li><li><a href="https://www.twitter.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">cattlepi</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Based on https://github.com/cattlepi/cattlepi this provides the documentation for api.cattlepi.com that can be used in tandem with the cattlepi project</p>
+      </div>
+    </div>
+
+    <div class="footer-col-center">
+        <ul class="contact-list">
+        <li><a class="page-link" href="/terms/">TermsOfUse</a></li>
+        <li><a class="page-link" href="/privacy/">Privacy</a></li>
+        <br>
+        <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="/assets/80x15.png" /></a><br />The content on this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        Raspberry Pi is a trademark of the <a href="https://www.raspberrypi.org/">Raspberry Pi Foundation</a>
+      </ul>
+    </div>
+
+  </div>
+  
+
+</footer>
+</body>
+
+</html>

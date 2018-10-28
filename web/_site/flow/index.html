@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://cattlepi.com/feed.xml" title="CattlePi" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">CattlePi</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/howto/">HowTo</a><a class="page-link" href="/flow/">Boot Flow</a><a class="page-link" href="/images/">Images</a><a class="page-link" href="/api/">Api</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Boot Flow</h1>
+  </header>
+
+  <div class="post-content">
+    <h2 id="steps-in-the-boot-process">Steps in the boot process</h2>
+
+<h3 id="step-0-how-the-raspberry-pi-boots">Step 0: How the Raspberry Pi boots:</h3>
+<p>The overall boot RPi boot process has been described over and over again. You can form an idea by looking <a href="https://raspberrypi.stackexchange.com/questions/10442/what-is-the-boot-sequence">here</a>, <a href="https://wiki.beyondlogic.org/index.php?title=Understanding_RaspberryPi_Boot_Process">here</a> or <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/bootflow.md">here</a></p>
+
+<p>CattlePi specific things:</p>
+<ul>
+  <li>The <strong>initfs</strong> image contains the initramfs and the kernel is instructed via options both in config.txt (initramfs cattleinit.cpio followkernel) and cmdline.txt (initrd=-1) to load and start the initramfs.</li>
+  <li>Once it starts, it will run the init script within the initramfs. The init script will invoke all the logic needed.</li>
+</ul>
+
+<p>The logic is explaines in all the next steps in this flow.</p>
+
+<h3 id="step-1-ping-the-api">Step 1: Ping the API</h3>
+
+<p>This verifies that the API is up, and also infers the current time (the Raspberry Pi does not have a real-time clock; knowing the time is vital for https access during the boot process).</p>
+
+<p><code class="highlighter-rouge">GET https://api.cattlepi.com/ping</code></p>
+
+<h3 id="step-2-get-the-configuration-associated-with-the-device">Step 2: Get the configuration associated with the device</h3>
+
+<p>Each Raspberry Pi device should have a configuration associated with it. The device will try to retrieve this configuration, first using its own identified configuration. If that fails, the identifier <code class="highlighter-rouge">default</code> is used.</p>
+
+<p>By default, the device identifier is its MAC address. This can be over-ridden, and set to whatever you want. However, ideally, you would still desire different IDs for different devices.</p>
+
+<p><code class="highlighter-rouge">GET https://api.cattlepi.com/boot/{deviceId}/config</code><br />
+and, if this fails:<br />
+<code class="highlighter-rouge">GET https://api.cattlepi.com/boot/default/config</code></p>
+
+<p>An example configuration for a device:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"initfs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://api.cattlepi.com/images/global/initramfs.tgz"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"md5sum"</span><span class="p">:</span><span class="w"> </span><span class="s2">"93a4eccacabdcce8eb5b8b68de6742cc"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"rootfs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://api.cattlepi.com/images/global/rootfs.sqsh"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"md5sum"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c1d44c65d29af575b2f6685b6a91d2da"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"bootcode"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"usercode"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>The reason behind the fall-back to the default device ID is that you can use it to detect new devices you’ve never seen before, and register them — and/or generate their own configurations on the fly.</p>
+
+<h3 id="step-3-download-the-images-specified-in-the-config">Step 3: Download the images specified in the config</h3>
+
+<p>From the config, download and store locally the images specified in <code class="highlighter-rouge">initfs.url</code> and <code class="highlighter-rouge">rootfs.url</code>. The md5sum for each of these can be used to verify the images. By default this check is off.</p>
+
+<h3 id="step-4-update-initfs">Step 4: Update initfs</h3>
+
+<p>If the contents of the boot partition are different to the contents specified via the configuration, the downloaded initfs will be unpacked on the boot partition (i.e. over-writing the contents of the existing files - but not removing additional files) and the device will be rebooted. This ensures that the device always runs with the specified boot partition content.</p>
+
+<h3 id="step-5-mount-the-root-filesystem-and-switch-to-it">Step 5: Mount the root filesystem and switch to it</h3>
+
+<p>The final step of the boot process consists of building the root filesystem. The root is a <a href="https://en.wikipedia.org/wiki/UnionFS">Unionfs filesystem</a> that has two layers: a bottom, read-only, layer specified in <code class="highlighter-rouge">rootfs.url</code>, and a top, read/write, layer that is a tmpfs filesystem.</p>
+
+<h2 id="implications-of-this-boot-flow">Implications of this boot flow</h2>
+
+<p>To make some implications explicit:</p>
+<ul>
+  <li>the Raspberry Pi needs to be able to acquire a network address through DHCP <em>and</em> needs to be able to do internet traffic. The boot process will fail if either are not met</li>
+  <li>all operations that happen during boot will be re-tried with exponential back-off in case of failure (i.e. failure of one API call does not mean much, and in an unlikely case, it will just add a few additional seconds to the boot - the boot is resilient to transient failures)</li>
+  <li>because of the way this is wired, only one partition is needed on the SD card: the boot partition. As an optimization the downloaded images are stored on this partition. The size of the partition should be enough to accomodate both the boot files themselves and the images. We recommend that the boot partition is at least 1GB in size</li>
+  <li>also because of how this is wired, the SD card is potentially written to only at boot time. Once the Pi has booted and you have the root filesystem, for all intents and purposes the card is only read from (for the lower layer of the union root filesystem)</li>
+  <li>if the images are not already cached, the process to download them may introduce a significant boot delay when the download needs to happen (e.g. if an image is 300M and the internet download speed is 5M/s, the download will take 60 seconds)</li>
+  <li>because of how the root filesystem is built, any changes made to the filesystem will reside in the upper layer of the union and will be lost on reboot. This is good, because it means that all the state you have on the device is expendable, and you can likely rebuild it after a reboot. If you rely on the state of the device, you will have to figure out a state to persist it outside of cattlepi.</li>
+</ul>
+
+<h2 id="more">More…</h2>
+
+<p>Inspect the logic and/or deep dive into the <a href="https://github.com/cattlepi/cattlepi/tree/master/templates/raspbian/resources/usr/share/initramfs-tools">actual code here</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name"><li>Contact: <a class="u-email" href="mailto:hello@cattlepi.com">hello@cattlepi.com</a></li><br>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cattlepi</span></a></li><li><a href="https://www.twitter.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">cattlepi</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Based on https://github.com/cattlepi/cattlepi this provides the documentation for api.cattlepi.com that can be used in tandem with the cattlepi project</p>
+      </div>
+    </div>
+
+    <div class="footer-col-center">
+        <ul class="contact-list">
+        <li><a class="page-link" href="/terms/">TermsOfUse</a></li>
+        <li><a class="page-link" href="/privacy/">Privacy</a></li>
+        <br>
+        <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="/assets/80x15.png" /></a><br />The content on this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        Raspberry Pi is a trademark of the <a href="https://www.raspberrypi.org/">Raspberry Pi Foundation</a>
+      </ul>
+    </div>
+
+  </div>
+  
+
+</footer>
+</body>
+
+</html>

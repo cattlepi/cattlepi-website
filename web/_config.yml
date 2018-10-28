@@ -1,0 +1,29 @@
+title: CattlePi
+email: hello@cattlepi.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Based on https://github.com/cattlepi/cattlepi this provides the documentation
+  for api.cattlepi.com that can be used in tandem with the cattlepi project
+baseurl: ""
+url: https://cattlepi.com
+github_username:  cattlepi
+twitter_username: cattlepi
+show_excerpts: true
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  auto_ids: true
+  syntax_highlighter: rouge
+
+plugins:
+  - jekyll-feed
+
+header_pages:
+- howto.md
+- flow.md
+- images.md
+- api.md
+
+sass:
+  style: compressed

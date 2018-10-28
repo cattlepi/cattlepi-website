@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://cattlepi.com/feed.xml" title="CattlePi" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">CattlePi</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/howto/">HowTo</a><a class="page-link" href="/flow/">Boot Flow</a><a class="page-link" href="/images/">Images</a><a class="page-link" href="/api/">Api</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Connecting through SSH</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2018-08-11T00:00:00-07:00" itemprop="datePublished">Aug 11, 2018
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This post will show you how to connect to a cattlepi managed device using SSH.
+We assume that you’ve already gone through the <a href="/2018/08/10/hello-cattlepi.html">Hello CattlePi Tutorial</a> and have your account and default boot target config.</p>
+
+<!--more-->
+<p>A few considerations before we get started:</p>
+<ul>
+  <li>in the image that you’re using the SSH daemon should be runnign, but it’s configured to not allow password logins (see https://github.com/cattlepi/cattlepi/blob/master/builder/tasks/squashfs.yml#L29). It also does not allow empty passwords or the root user login in (keep in mind that the <strong>pi</strong> user does have sudo though)</li>
+  <li>by default we don’t have any ssh keys baked in into the image for the pi used</li>
+  <li>the host ssh keys are regenerated on boot (if you reboot a cattlepi device the ssh client will complain that the server key has changed - this is normal - actually this is expected)</li>
+</ul>
+
+<p>Now, how do we connect? It turns out that there is a hook in the device configuration that allows you to inject keys that are authorized to connect as the pi user (technically inject public keys and need to separately have the private key).</p>
+
+<p>The code responsible for this is <a href="https://github.com/cattlepi/cattlepi/blob/2c2d2100c8538f8df34adb31c1db1c2004f152da/templates/raspbian/resources/bin/bootstrap.sh#L12">here</a>.<br />
+You can observe that if an array is present at <strong>config.ssh.pi.authorized_keys</strong> in the configuration that is served to the device, each element in that array will get injected into the authorized keys. 
+In the <a href="https://github.com/cattlepi/cattlepi/blob/master/server/server.py#L44">demo server</a> we see one way you can generate the config. For the sake of simplicity and brevity we will do this using api.cattlepi.com and we will update the config via curl.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">PAYLOAD</span><span class="o">=</span><span class="s1">'{"config":{"ssh":{"pi":{"authorized_keys":["'</span><span class="k">$(</span><span class="nb">head</span> <span class="nt">-1</span> <span class="nv">$HOME</span>/.ssh/id_rsa.pub<span class="k">)</span><span class="s1">'"]}}},"initfs":{"md5sum":"8e0e2870637e77462b40b8fe67c6d91b", "url":"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz"},"rootfs":{"md5sum":"0826222b56df3d074fa4b21fd4b9d891","url":"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh"}}'</span>
+curl <span class="nt">-vvv</span> <span class="nt">-H</span> <span class="s2">"Accept: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da"</span> <span class="se">\</span>
+    <span class="nt">-X</span> POST <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$PAYLOAD</span><span class="s2">"</span> <span class="se">\</span>
+    https://api.cattlepi.com/boot/default/config
+</code></pre></div></div>
+
+<p>The payload is the same with the exception that the authorized keys are now injected. Notice how the id_rsa.pub is picked up and injected in the config. You can inject any keys you want - this serves as an example. You can also have multiple keys as authorized_keys is an array.</p>
+
+<p>To retrieve the config and inspect it:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">{</span>
+  <span class="s2">"bootcode"</span>: <span class="s2">""</span>,
+  <span class="s2">"config"</span>: <span class="o">{</span>
+    <span class="s2">"ssh"</span>: <span class="o">{</span>
+      <span class="s2">"pi"</span>: <span class="o">{</span>
+        <span class="s2">"authorized_keys"</span>: <span class="o">[</span>
+          <span class="s2">"ssh-rsa actual_base64_encodedkey email@test.com"</span>
+        <span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>,
+  <span class="s2">"initfs"</span>: <span class="o">{</span>
+    <span class="s2">"md5sum"</span>: <span class="s2">"8e0e2870637e77462b40b8fe67c6d91b"</span>,
+    <span class="s2">"url"</span>: <span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz"</span>
+  <span class="o">}</span>,
+  <span class="s2">"rootfs"</span>: <span class="o">{</span>
+    <span class="s2">"md5sum"</span>: <span class="s2">"0826222b56df3d074fa4b21fd4b9d891"</span>,
+    <span class="s2">"url"</span>: <span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh"</span>
+  <span class="o">}</span>,
+  <span class="s2">"usercode"</span>: <span class="s2">""</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Now, reboot the Pi and attempt connecting to it:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh pi@192.168.1.87
+The authenticity of host '192.168.1.87 (192.168.1.87)' can't be established.
+ECDSA key fingerprint is SHA256:GxIl+YtmQjC5y6ri/KGhYy4j9AbUzx5slQsIpIk0bt0.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.1.87' (ECDSA) to the list of known hosts.
+Linux raspberrypi 4.14.52-v7+ #1123 SMP Wed Jun 27 17:35:49 BST 2018 armv7l
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Sat Aug 11 04:45:02 2018 from 192.168.1.166
+pi@raspberrypi:~$
+</code></pre></div></div>
+
+<p>You can not connect to the device. 
+While we are here let’s take a look in /cattlepi dir:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pi@raspberrypi:~<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lah</span> /cattlepi/
+total 16K
+drwxr-xr-x 1 root root  120 Aug 11 20:32 <span class="nb">.</span>
+drwxr-xr-x 1 root root  160 Aug 11 20:32 ..
+<span class="nt">-rwxr-xr-x</span> 1 root root   37 Aug 11 20:32 apikey
+<span class="nt">-rw-r--r--</span> 1 root root   25 Aug 11 20:32 base
+<span class="nt">-rw-r--r--</span> 1 root root   30 Aug 11 20:32 base_relative_config
+<span class="nt">-rwxr-xr-x</span> 1 root root 1.2K Aug 11 20:32 config
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pi@raspberrypi:~<span class="nv">$ </span><span class="nb">cat</span> /cattlepi/apikey 
+8db071a4-63ef-47f7-9cfc-ca479b5422da
+pi@raspberrypi:~<span class="nv">$ </span><span class="nb">cat</span> /cattlepi/base
+https://api.cattlepi.com
+pi@raspberrypi:~<span class="nv">$ </span><span class="nb">cat</span> /cattlepi/base_relative_config 
+boot/b8:27:eb:6c:33:e2/config
+pi@raspberrypi:~<span class="nv">$ </span><span class="nb">cat</span> /cattlepi/config | jq <span class="nb">.</span>
+<span class="o">{</span>
+  <span class="s2">"bootcode"</span>: <span class="s2">""</span>,
+  <span class="s2">"config"</span>: <span class="o">{</span>
+    <span class="s2">"ssh"</span>: <span class="o">{</span>
+      <span class="s2">"pi"</span>: <span class="o">{</span>
+        <span class="s2">"authorized_keys"</span>: <span class="o">[</span>
+          <span class="s2">"ssh-rsa actual_base64_encodedkey email@test.com"</span>
+        <span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>,
+  <span class="s2">"initfs"</span>: <span class="o">{</span>
+    <span class="s2">"md5sum"</span>: <span class="s2">"8e0e2870637e77462b40b8fe67c6d91b"</span>,
+    <span class="s2">"url"</span>: <span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/initramfs.tgz"</span>
+  <span class="o">}</span>,
+  <span class="s2">"rootfs"</span>: <span class="o">{</span>
+    <span class="s2">"md5sum"</span>: <span class="s2">"0826222b56df3d074fa4b21fd4b9d891"</span>,
+    <span class="s2">"url"</span>: <span class="s2">"https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v4/rootfs.sqsh"</span>
+  <span class="o">}</span>,
+  <span class="s2">"usercode"</span>: <span class="s2">""</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>You can see what your api key is, you can see the api endpoint and the configuration from within the running Pi.</p>
+
+  </div><a class="u-url" href="/2018/08/11/ssh-on.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name"><li>Contact: <a class="u-email" href="mailto:hello@cattlepi.com">hello@cattlepi.com</a></li><br>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cattlepi</span></a></li><li><a href="https://www.twitter.com/cattlepi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">cattlepi</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Based on https://github.com/cattlepi/cattlepi this provides the documentation for api.cattlepi.com that can be used in tandem with the cattlepi project</p>
+      </div>
+    </div>
+
+    <div class="footer-col-center">
+        <ul class="contact-list">
+        <li><a class="page-link" href="/terms/">TermsOfUse</a></li>
+        <li><a class="page-link" href="/privacy/">Privacy</a></li>
+        <br>
+        <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="/assets/80x15.png" /></a><br />The content on this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        Raspberry Pi is a trademark of the <a href="https://www.raspberrypi.org/">Raspberry Pi Foundation</a>
+      </ul>
+    </div>
+
+  </div>
+  
+
+</footer>
+</body>
+
+</html>
