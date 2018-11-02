@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Setting up Pi-Hole via the prebuild image"
+title:  "Setting up Pi-Hole via the prebuilt image"
 excerpt_separator: <!--more-->
 ---
-In a [previous tutorial]({% post_url 2018-08-21-pihole-and-usercode %}) we learned how to setup our Raspberry Pi to run PiHole by injecting the setup code into the usercode that runs automatically on setup. While this is usefull (and you should leverage the usercode when needed) it also has a few downsides: 
+In a [previous tutorial]({% post_url 2018-08-21-pihole-and-usercode %}) we learned how to setup our Raspberry Pi to run PiHole by injecting the setup code into the usercode that runs automatically on setup. While this is useful (and you should leverage the usercode when needed) it also has a few downsides: 
  * it's slow. the whole pihole process can take quite a long time. 
  * it's error prone. A network connectivity issue or any other transient issue (that may not be under your control) means that the pihole setup might fail .
 
