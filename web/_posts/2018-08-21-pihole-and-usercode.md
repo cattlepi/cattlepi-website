@@ -3,14 +3,14 @@ layout: post
 title:  "Setting up Pi-Hole via usercode"
 excerpt_separator: <!--more-->
 ---
-This post will help you understand how the usercode field in the device boot configuration works. In the process of demostrating how this works, we will also show you how you could setup Pi-Hole by using this feature.
+This post will help you understand how the usercode field in the device boot configuration works. In the process of demonstrating how this works, we will also show you how you could setup Pi-Hole by using this feature.
 
 <!--more-->
 We assume that you've already gone through the [Hello CattlePi Tutorial]({% post_url 2018-08-10-hello-cattlepi %}) and have your account and default boot target config. 
 
 **First thing** first: What is Pi-Hole? You can check out the [project on its official page](https://pi-hole.net/) or on its [wikipedia page](https://en.wikipedia.org/wiki/Pi-hole). In a nutshell, it's a DNS sinkhole that sits between you and the real DNS servers and selectively blacklists domains known to be used by ad networks. The net effect of this is that you will not see ads originating on those subdomains (and a nice side effect is that you will experience faster browsing speeds).  
 
-Pi-Hole is an extermely efficient way of leveraging a Raspberry Pi to do network level ad-blocking in your home network. You setup the Pi, you configure the router to use its IP as the DNS server and you're mostly done.  
+Pi-Hole is an extremely efficient way of leveraging a Raspberry Pi to do network level ad-blocking in your home network. You setup the Pi, you configure the router to use its IP as the DNS server and you're mostly done.  
 
 **Second**: What is usercode?  
 Let's take another look at device boot config.  
@@ -63,7 +63,7 @@ curl -H "Accept: application/json" \
     https://api.cattlepi.com/boot/default/config | jq .
 ```
 
-To verify that the usercode was properly encodede we can do:
+To verify that the usercode was properly encoded we can do:
 ```bash
 curl -H "Accept: application/json" \
     -H "Content-Type: application/json" \

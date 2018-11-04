@@ -68,6 +68,6 @@ unit: sectors
 ```
 
 Final note: inside a booted Pi that successfully wrote the stock raspbian to sd card and rebooted you will find a script [**/etc/cattlepi/restore_cattlepi.sh**](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_stock/resources/bin/restore_cattlepi.sh) that you can use if you ever want to revert this Pi to being managed by CattlePi. 
-Should you ever want to revert make sure you have an up-to-date device boot target config and run this script with root priviledges.
+Should you ever want to revert make sure you have an up-to-date device boot target config and run this script with root privileges.
 
 Find the *latest* raspbian stock image info in the [Images]({% link images.md %}) section.

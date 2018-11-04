@@ -7,7 +7,7 @@ This post will show you how to get started with cattlepi.
 We assume you already have a [supported](https://github.com/cattlepi/cattlepi/blob/master/doc/FAQ.md#what-types-of-hardware-does-this-work-on) Raspberry Pi and an empty SD card you can use.
 <!--more-->
 
-We also asume that the Pi is on a network in which it will receive an IP Address through DHCP and will be have internet connectivity (assuming network is correctly configured on the PI)  
+We also assume that the Pi is on a network in which it will receive an IP Address through DHCP and will be have internet connectivity (assuming network is correctly configured on the PI)  
 
 # Step 1 - Downloading the bootstrap cattlepi image
 Follow the instructions here: [https://github.com/cattlepi/cattlepi#quickstart](https://github.com/cattlepi/cattlepi#quickstart)  
@@ -40,8 +40,8 @@ Sample output (may vary at a later point in the future):
 ```
 You can observe the images that are used under the *initfs.url* and *rootfs.url* keys. These are the images that will get downloaded and persisted on the SD card.  
 
-# Step 2 - Requestion your own API Key
-Using the demo api key is fine, but due to its shared nature you cannot do much with it. To be able to unleash the full possiblities of the API you will need to request your own API Key.  
+# Step 2 - Requesting your own API Key
+Using the demo api key is fine, but due to its shared nature you cannot do much with it. To be able to unleash the full possibilities of the API you will need to request your own API Key.  
 
 Head over to the [API]({% link api.md %}) section and request your own API Key.  
 You need to provide a valid email address and after your API Key is assigned you will receive an link with instructions on how to activate it.   
@@ -124,7 +124,7 @@ An obvious idea is to update the cattlepi_apikey to use our API key. If you were
 
 Because the cmdline.txt is part of the image, if your configuration instructs the loaded to pick up another **initfs** it will get overwritten by whatever is that **initfs**. So it's going to work until the next update. 
 
-Fortunatelly there is one place where the API key does not get overwritten. If we have a file named **/cattlepi/apikey** the API key will be loaded from that file and will override the kernel parameters one (see logic [here]( https://github.com/cattlepi/cattlepi/blob/2c2d2100c8538f8df34adb31c1db1c2004f152da/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers))
+Fortunately there is one place where the API key does not get overwritten. If we have a file named **/cattlepi/apikey** the API key will be loaded from that file and will override the kernel parameters one (see logic [here]( https://github.com/cattlepi/cattlepi/blob/2c2d2100c8538f8df34adb31c1db1c2004f152da/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers))
 
 In the root of SDcard do:
 ```bash
@@ -136,7 +136,7 @@ Also be sure to verify that the apikey was properly written:
 cat cattlepi/apikey 
 8db071a4-63ef-47f7-9cfc-ca479b5422da
 ```
-If everythign looks good unmount the SDCard and place it in the Raspberry Pi.
+If everything looks good unmount the SDCard and place it in the Raspberry Pi.
 Boot is up.
 
 # Step 4 - Controlling the boot targets for your Pi.
@@ -207,7 +207,7 @@ curl -s -H "X-Api-Key: 8db071a4-63ef-47f7-9cfc-ca479b5422da" https://api.cattlep
 
 You may be wondering how come the default boot target was there for the demo api key and was not there for our own api key. For all intents and purposes, everything under one API key is isolated. They keys shared the same path as far as the actual API goes but, in the back, they access different data sources. To go even further you could have the same device id (mac) used with multiple api keys and not see any conflicts. This is by design.
 
-Ok. Back to booting the Pi. Now that we have a default boot target let's try booting it. You will notice that the Pi boots just fine now (and can retrive its config).
+Ok. Back to booting the Pi. Now that we have a default boot target let's try booting it. You will notice that the Pi boots just fine now (and can retrieve its config).
 
 Before wrapping up, let's try and see if we can find a list of devices that are active under our API key.
 ```bash

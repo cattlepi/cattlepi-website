@@ -7,7 +7,7 @@ permalink: /images/
 Currently available images.  
 You can reference these (along with the associated md5sum in your device boot configurations).  
 
-## How to translate this iamges into boot config?
+## How to translate this images into boot config?
 Translate the given shell variables  into something you can use against the cattlepi api to program the boot target for specific devices. 
 
 Example:
@@ -21,8 +21,8 @@ curl -H "Accept: application/json" \
     https://api.cattlepi.com/boot/default/config
 ```
 
-## Availble prebuilt images
-### Raspbian Strech Lite - CattlePi Build (v8)
+## Available prebuilt images
+### Raspbian Stretch Lite - CattlePi Build (v8)
 This is the default Cattlepi image   
 Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_cattlepi.yml)  
 To build this: [make raspbian_cattlepi](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L9)  
@@ -34,7 +34,7 @@ ROOTFS=https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v8/rootfs
 ROOTFSMD5=5c0318793df00f36244d7ee888f809e7
 ```
 
-### Raspbian Strech - Stock Build (v9)
+### Raspbian Stretch - Stock Build (v9)
 This image will write place stock raspbian on your sdcard (need the sd card to be in a compatible layout or you need to associate the proper sdlayout to enable it)  
 Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_stock.yml)  
 To build this: [make raspbian_stock](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L21)  
@@ -46,7 +46,7 @@ ROOTFS=https://api.cattlepi.com/images/global/raspbian-stock/2018-06-29/v9/rootf
 ROOTFSMD5=82cf5bda1b2fa2da252ab41d3b28b8d7
 ```
 
-### Raspbian Strech Lite - Pihole (v8)
+### Raspbian Stretch Lite - Pihole (v8)
 This image has PiHole baked into it.  
 Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_pihole.yml)  
 To build this: [make raspbian_pihole](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25)  

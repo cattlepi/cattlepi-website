@@ -11,7 +11,7 @@ One difference is that it's running in the boot phase, before the root filesyste
 The typical usecase for this would be to alter something in config.txt or cmdline.txt, but because of the stage this runs in, you can pretty much hijack the boot process however you like.  
 You can see the code that handles the bootcode field [here](https://github.com/cattlepi/cattlepi/blob/b30645c02553a009ed961eb1c0f0b108fee4a460/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers#L130).  
 
-For this tutorial we will update the ammount of gpu memory we are allocating for our Pi. For a bit of background, for the Raspberry Pi, the memory is split between the CPU and the GPU. By default the GPU gets 64 megabytes, and the CPU gets what's left. More details here: [config-txt/memory.md](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md)  
+For this tutorial we will update the amount of gpu memory we are allocating for our Pi. For a bit of background, for the Raspberry Pi, the memory is split between the CPU and the GPU. By default the GPU gets 64 megabytes, and the CPU gets what's left. More details here: [config-txt/memory.md](https://www.raspberrypi.org/documentation/configuration/config-txt/memory.md)  
 
 On a Pi that with an factory config.txt let's look at how much memory the CPU has available:
 ```bash
