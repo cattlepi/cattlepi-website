@@ -30,4 +30,5 @@ When leveraging CattlePi, one can:
 
 Our hope is that you'll find it useful and cattlepi will unlock scenarios that were impossible or hard to manage before.
 
-**Your feedback is greatly appreciated.**
+**Your feedback is greatly appreciated.**  
+Contribute directly by submitting a PR for the [cattlepi-website](https://github.com/cattlepi/cattlepi-website) or [email us](mailto:hello@cattlepi.com)
