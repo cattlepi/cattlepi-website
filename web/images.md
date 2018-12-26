@@ -21,42 +21,30 @@ curl -H "Accept: application/json" \
     https://api.cattlepi.com/boot/default/config
 ```
 
-## Available prebuilt images
-### Raspbian Stretch Lite - CattlePi Build (v8)
+## Available prebuilt recipe images
+There are 3 recipes that get automatically build periodically. These include:  
+
+**raspbian_cattlepi**  
 This is the default Cattlepi image   
-Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_cattlepi.yml)  
-To build this: [make raspbian_cattlepi](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L9)  
-```bash
-#generated on Sat Sep 29 19:05:35 PDT 2018
-INITFS=https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v8/initramfs.tgz
-INITFSMD5=63523e54a3f49918ac3a9a790154e76f
-ROOTFS=https://api.cattlepi.com/images/global/raspbian-lite/2018-06-29/v8/rootfs.sqsh
-ROOTFSMD5=5c0318793df00f36244d7ee888f809e7
-```
+Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_cattlepi.yml)   
+To build this yourself: [make raspbian_cattlepi](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L9)
 
-### Raspbian Stretch - Stock Build (v9)
-This image will write place stock raspbian on your sdcard (need the sd card to be in a compatible layout or you need to associate the proper sdlayout to enable it)  
-Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_stock.yml)  
-To build this: [make raspbian_stock](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L21)  
-```bash
-# generated on Sun Oct  7 20:53:31 PDT 2018
-INITFS=https://api.cattlepi.com/images/global/raspbian-stock/2018-06-29/v9/initramfs.tgz
-INITFSMD5=1bc253db8b243c84f2c41b2485d77021
-ROOTFS=https://api.cattlepi.com/images/global/raspbian-stock/2018-06-29/v9/rootfs.sqsh
-ROOTFSMD5=82cf5bda1b2fa2da252ab41d3b28b8d7
-```
-
-### Raspbian Stretch Lite - Pihole (v8)
+**raspbian_pihole**
 This image has PiHole baked into it.  
 Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_pihole.yml)  
-To build this: [make raspbian_pihole](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25)  
-```bash
-# generated on Sun Sep 30 22:33:50 PDT 2018
-INITFS=https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/initramfs.tgz
-INITFSMD5=fc9deaedfb0a2701138535f0878aa752
-ROOTFS=https://api.cattlepi.com/images/global/raspbian-pihole/2018-06-29/v8/rootfs.sqsh
-ROOTFSMD5=e009a7ca757d32f6783745c50e9a2411
-```
+To build this yourself: [make raspbian_pihole](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25)  
+
+**raspbian_stock**
+This image will write place stock raspbian on your sdcard (need the sd card to be in a compatible layout or you need to associate the proper sdlayout to enable it)  
+Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_stock.yml)  
+To build this yourself: [make raspbian_stock](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L21)  
+
+***In general all the images that are referenced by the API will be preserved and the ones that are not in use will be garbage collected periodically.***  If you want to ensure that the image you are using is not removed be sure to reference it in a configuration or persist it somewhere else and after that reference it from there. 
+
+## The current prebuilt avalaible images
+For each set of images there is a build id (that captures a timestamp) and underneath that build id you have the pointers and the checksums for the images themselves.  
+
+{% include_relative assets/prebuild.md %}
 
 ## Build your own images
 Learn how to build your own images here: [BUILDING.md](https://github.com/cattlepi/cattlepi/blob/master/doc/BUILDING.md)

@@ -3,6 +3,5 @@ set -x
 SELFDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOPDIR=$(dirname $SELFDIR)
 WEBDIR=$TOPDIR"/web"
-${SELFDIR}/download_dynamic.sh
 
-cd $WEBDIR && bundle exec jekyll serve
+wget -O ${WEBDIR}/assets/prebuild.md https://api.cattlepi.com/images/global/autobuild/index.md?apiKey=deadbeef
