@@ -51,3 +51,6 @@ build-iPhoneSimulator/
 
 # ignore generated artifacts
 web/_site
+
+# don't store the cached prebuild version
+web/assets/prebuild.md
