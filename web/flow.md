@@ -72,6 +72,6 @@ To make some implications explicit:
 
 ## More... 
 
-Inspect the logic and/or deep dive into the [actual code here](https://github.com/cattlepi/cattlepi/tree/master/templates/raspbian/resources/usr/share/initramfs-tools)
+Inspect the logic and/or deep dive into the [actual code here](https://github.com/cattlepi/cattlepi/tree/master/templates/raspbian_cattlepi/resources/usr/share/initramfs-tools)
 
 
