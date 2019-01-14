@@ -50,13 +50,13 @@ The following section is optional, but can greatly increase build speed if you c
 }
 ```  
 
-**You will need to either update the raspbian location or completly remove this for the process to work.** See the stock [bootstrap_recipe.sh](https://github.com/cattlepi/cattlepi/blob/23d32adb78face5f65dd6a9d90e7aa8f134d6038/templates/raspbian_stock/resources/bin/bootstrap_recipe.sh#L9) for the official location from where the image will be downloaded and written if the absence of the standalone section. Also keep in mind that this may be updated at any time.
+**You will need to either update the raspbian location or completely remove this for the process to work.** See the stock [bootstrap_recipe.sh](https://github.com/cattlepi/cattlepi/blob/23d32adb78face5f65dd6a9d90e7aa8f134d6038/templates/raspbian_stock/resources/bin/bootstrap_recipe.sh#L9) for the official location from where the image will be downloaded and written if the absence of the standalone section. Also keep in mind that this may be updated at any time.
 
 Make sure the builder is setup and up with the raspbian stock image. 
 
 You will also need to have a working AWS account as the built images are uploaded to S3 for storage. You can read on how to install and configure the awscli tool [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html). You also have the option to not use AWS but this will require some changes (ie will not work out of the box and is not covered in this tutorial).
 
-With the prep work, let's use the **build_and_publish.sh** script to build all the images in the cattlepi repro automatically.
+With the prep work, let's use the **build_and_publish.sh** script to build all the images in the cattlepi repository automatically.
 ```bash
 git clone https://github.com/cattlepi/cattlepi.git
 source cattlepi/tools/autobuild/default_hooks/setup.sh

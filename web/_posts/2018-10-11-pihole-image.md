@@ -17,7 +17,7 @@ The PiHole recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/
 To build it, do: [make raspbian_pihole](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25)
 
 What does the recipe do?  
-It's based on the raspbian_cattlepi recipe and it adds a few things: [the script](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/build_pihole.sh) that bakes PiHole into the image at build time and [the script](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/bootstrap_recipe.sh) that will update the ip and the interfaces on Pi startup.
+It's based on the raspbian_cattlepi recipe and it adds a few things: [the script](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/build_pihole.sh) that bakes PiHole into the image at build time and [the script](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/resources/bin/bootstrap_recipe.sh) that will update the IP and the interfaces on Pi startup.
 
 The whole recipe is injected into the cattlepi base recipe via the [preclone_hook_squashfs.yml](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_pihole/tasks/preclone_hook_squashfs.yml).
 
