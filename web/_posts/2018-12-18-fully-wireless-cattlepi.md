@@ -3,7 +3,7 @@ layout: post
 title:  "Full wireless functionality (including the initramfs)"
 excerpt_separator: <!--more-->
 ---
-One of the great things about the Raspberry Pi 3 is its ability to use a wireless network connection, removing the need for extra cables. Up until now, Pi's provisioned with CattlePi have required a hardwired network connection. You may have even tried to hack around this by including a `wpa_supplicant` in your rootfs or other methods.
+One of the great things about the Raspberry Pi 3 is its ability to use a wireless network connection, removing the need for extra cables. Up until now, Raspberry Pis provisioned with CattlePi have required a hardwired network connection. You may have even tried to hack around this by including a `wpa_supplicant` in your rootfs or other methods.
 
 Wireless functionality is now a fully supported CattlePi feature! Once the proper key is setup in the config, and your CattlePi is fully provisioned, it will connect to the wireless network to do its business (even in the initramfs!).
 
@@ -64,7 +64,7 @@ curl -H "Accept: application/json" \
     https://api.cattlepi.com/boot/default/config | jq -r .wpa_supplicant | base64 -d
 ```
 
-Now we should be able to fully provision our Pi.  Let the Pi go through the entire CattlePi provisioning process, until it is sitting at a login prompt. Even with proper wireless config, a fully booted `raspbian_cattlepi` machine that has an ethernet cable plugged into it will give precedence to the hardwired network. At this point, you can reboot the machine, pull the ethernet cable, and function wirelessly from this point forward!
+Now we should be able to fully provision our Pi.  Let the Pi go through the entire CattlePi provisioning process, until it is sitting at a login prompt. Even with proper wireless config, a fully booted `raspbian_cattlepi` machine that has an Ethernet cable plugged into it will give precedence to the hardwired network. At this point, you can reboot the machine, pull the Ethernet cable, and function wirelessly from this point forward!
 
 It is important to mention that you are welcome to update the `wpa_supplicant` data in the config at any time. If the Pi is booting and picks up a config file with updated `wpa_supplicant` data, it will reboot and use this new config data. You may also add multiple networks to the file if you know that you will be moving the Pi around to different places. The [Raspberry Pi docs](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md) on this are really great (multiple network config is towards the bottom of the page).
 

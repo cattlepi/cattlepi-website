@@ -35,13 +35,13 @@ Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/reci
 To build this yourself: [make raspbian_pihole](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L25)  
 
 **raspbian_stock**
-This image will write place stock raspbian on your sdcard (need the sd card to be in a compatible layout or you need to associate the proper sdlayout to enable it)  
+This image will write place stock raspbian on your SDCard (need the SD card to be in a compatible layout or you need to associate the proper sdlayout to enable it)  
 Recipe for this is: [here](https://github.com/cattlepi/cattlepi/blob/master/recipes/raspbian_stock.yml)  
 To build this yourself: [make raspbian_stock](https://github.com/cattlepi/cattlepi/blob/master/Makefile#L21)  
 
 ***In general all the images that are referenced by the API will be preserved and the ones that are not in use will be garbage collected periodically.***  If you want to ensure that the image you are using is not removed be sure to reference it in a configuration or persist it somewhere else and after that reference it from there. 
 
-## The current prebuilt avalaible images
+## The current prebuilt available images
 For each set of images there is a build id (that captures a timestamp) and underneath that build id you have the pointers and the checksums for the images themselves.  
 
 {% include_relative assets/prebuild.md %}

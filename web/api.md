@@ -77,7 +77,7 @@ The corresponding response would be:
   }
   ```
 
-  **A note on a special deviceid**: The device id **`default`** is a special id. Whenever you do a get with a deviceid that was not specified before (through a previous POST for that device id), if a device configuration was specified for the `default` deviceid, you will receive this configuration. **Why?** This allows you to dynamically boot your devices without having to specify them apriori. You can maintain one device configuration for all your devices, or you can use the default one as a method of discovering and configuring them.  
+  **A note on a special deviceid**: The device id **`default`** is a special id. Whenever you do a get with a deviceid that was not specified before (through a previous POST for that device id), if a device configuration was specified for the `default` deviceid, you will receive this configuration. **Why?** This allows you to dynamically boot your devices without having to specify them a priori. You can maintain one device configuration for all your devices, or you can use the default one as a method of discovering and configuring them.  
 
 + **`POST`**  
   This call is used to update the boot configuration associated with a device.
@@ -107,14 +107,14 @@ The corresponding response would be:
         "url": <<path to the rootfs image : string>>,
         "md5sum": <<md5 sum of the rootfs image : string>>
       },
-      "bootcode": <<base64 endcoded shell script : string >>,
-      "usercode": <<base64 endcoded shell script : string >>,
+      "bootcode": <<base64 encoded shell script : string >>,
+      "usercode": <<base64 encoded shell script : string >>,
       "config": <<additional free form configuration : valid json>>
     }
   ```
   The API will **ignore** any keys that do not match the above. Any keys that are not specified will be set to an empty string (or empty json in case of the config)
 
-  **Another note on isolation**: The demo api key `deadbeef` has this method disabled. Your individually requested key will not have this limitation.
+  **Another note on isolation**: The demo API key `deadbeef` has this method disabled. Your individually requested key will not have this limitation.
 
 + **`DELETE`**  
   This call is used to remove the boot configuration associated with a device.
@@ -144,7 +144,7 @@ The corresponding response would be:
   < Location: https://cattlepi-images.s3.amazonaws.com/global/initramfs.tgz?AWSAccessKeyId=ASIAIK4I7NAAVTVCQ6UA&Signature=a7u87tfMnC3N0h6h8rLJigSc3BM%3D&x-amz-security-token=FQoDYXdzEJ7%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDMoDCHuiWoGyR2XCpCKNAimobryo74h6%2BjdDsKl4DsWOtXQsKkLJE%2F4aXHHrBGtd9UFfk%2FbdNj10MryFenYB%2BCWfKQGmIOC1ouEMR0GIlsZb2X3NjGNhagOO%2FIpFm4auqgect3P69fkQqNAOSPB40EWXldnJTjDcXoc9th4ZRhjn3rmOftd4w7VdoHtKU3AT2CxnykldrF3cAviMig8FX2DJU%2F7nF8tfM3h46%2BhG4z6iKr9W76WUGWAmF69rFpF7XfZZhqTcdnj5OTNZ4%2BjpTnokhi88X5%2BB8489%2FIORyRwcCIdSJIaHQ2xI%2Fa7GKZpSPzaYrdXP7gHCeQOVW0XxDTgqRqqi1sNNo42U2RKbMuwE2pShm6nUwmBpi0lAKJOax9kF&Expires=1529990485
   < X-Amzn-Trace-Id: Root=1-5b31cd37-a90fd0188f6c12685705b278
   ```
-  At this point in time we don't give you the option to upload your own images. You will have to host and serve your own images or use the [prebuild images]({% link images.md %}) we offer.
+  At this point in time we don't give you the option to upload your own images. You will have to host and serve your own images or use the [prebuilt images]({% link images.md %}) we offer.
 
 ### https://api.cattlepi.com/track
 Tracking allows to retrieve information your devices have reported and to identify devices that are active on the network. A device is considered active if it was seen within the last 3 months.  
@@ -227,6 +227,6 @@ Unused requests **do not accumulate**.
 What this means is:
  * if you had a single device, and rebooted it each minute, you would not hit the API limits
  * if you had to alter or update your configuration, you could make ten updates per hour _at the most_. Or you could update the configuration for ten devices in one hour. Again, this should not constrain you (but do reach out if you need this to be higher)
- * the ten requests per month for downloading images may seem a bit draconic at first. The reasoning is as follows: the images themselves are large and the downloads will consume real bandwidth. If you have less than five devices, this quota should easily suit your needs (recall that the images are cached locally - this is the main reason why we want to cache them). If you need to get around this you could store the images somewhere your devices can access (intra- or internet), and point the config to those images. Alternatively, we are open to learning more about your use case (and perhaps helping you with the additional bandwidth)
+ * the ten requests per month for downloading images may seem a bit draconian at first. The reasoning is as follows: the images themselves are large and the downloads will consume real bandwidth. If you have less than five devices, this quota should easily suit your needs (recall that the images are cached locally - this is the main reason why we want to cache them). If you need to get around this you could store the images somewhere your devices can access (intra- or Internet), and point the config to those images. Alternatively, we are open to learning more about your use case (and perhaps helping you with the additional bandwidth)
 
 We do not currently support uploading your custom images through our API. However, this is on our strategic roadmap. Again, we encourage you to reach out and tell us about your use case.

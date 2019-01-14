@@ -4,14 +4,14 @@ title: Privacy
 permalink: /privacy/
 ---
 
-These terms apply to the content on this website (**cattlepi.com**) and the api service that this website references (**api.cattlepi.com**).  
+These terms apply to the content on this website (**cattlepi.com**) and the API service that this website references (**api.cattlepi.com**).  
 
 The website does not use any kind of cookies.  
-We do leverage AWS Cloudfront for the purpose of serving this website. See Web Distribution Log File Format [here](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html) to understand the type of information CloudFront captures on each request. Among other things, your IP, referer, user-agent, query url, the CloudFront location that served the request, etc are things that are captured and used by CloudFront to generate analytics. We **do not** have logging explicitely enabled on CloudFront so apart from analytics that give us a rough idea on the sources of the traffic and traffic volume we don't know (or want to know) anything about you.
+We do leverage AWS Cloudfront for the purpose of serving this website. See Web Distribution Log File Format [here](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html) to understand the type of information CloudFront captures on each request. Among other things, your IP, referrer, user-agent, query url, the CloudFront location that served the request, etc are things that are captured and used by CloudFront to generate analytics. We **do not** have logging explicitly enabled on CloudFront so apart from analytics that give us a rough idea on the sources of the traffic and traffic volume we don't know (or want to know) anything about you.
 
 The api service (api.cattlepi.com) captures and logs all the requests it receives (headers and body). This is done solely for the purpose of troubleshooting if the need ever arises. The logs retention period is 60 days from the moment they are generated.  
 
-The api also captures and stores internally information that you provide about your devices including, but not limited to the device ids, boot configurations, startup scripts, etc. Basically everything that you provide to the api is preserved. Data provided by you is only accessible by you, unless you explicitily specify it otherwise. 
+The api also captures and stores internally information that you provide about your devices including, but not limited to the device ids, boot configurations, startup scripts, etc. Basically everything that you provide to the api is preserved. Data provided by you is only accessible by you, unless you explicitly specify it otherwise. 
 
 Requesting an api key (as described in the api section) will require an email address. 
 We will remember this email address and use it to contact you only in one of two following cases:  

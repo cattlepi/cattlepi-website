@@ -7,7 +7,7 @@ This post will show you how to get started with cattlepi.
 We assume you already have a [supported](https://github.com/cattlepi/cattlepi/blob/master/doc/FAQ.md#what-types-of-hardware-does-this-work-on) Raspberry Pi and an empty SD card you can use.
 <!--more-->
 
-We also assume that the Pi is on a network in which it will receive an IP Address through DHCP and will be have internet connectivity (assuming network is correctly configured on the PI)  
+We also assume that the Pi is on a network in which it will receive an IP Address through DHCP and will be have Internet connectivity (assuming network is correctly configured on the PI)  
 
 # Step 1 - Downloading the bootstrap cattlepi image
 Follow the instructions here: [https://github.com/cattlepi/cattlepi#quickstart](https://github.com/cattlepi/cattlepi#quickstart)  
@@ -100,8 +100,8 @@ If this looks terribly familiar to what one would see on a Raspberry Pi under /b
  * the cattleinit.cpio contains the ramdisk image that is used in the boot process. Because it's a cpio file you can open it up and inspect the contents. All of the update logic is there.
  * the cattlepi dir contains the images we are caching and a config file (which is the output of the same earlier curl command)
  * the initfs file hold the checksum that the *initfs* image that resulted in this setup had (this is how the loader know when to update)
- * the config.txt file (present on all Pis) instructs the bootloaded to load the cattleinit.cpio file in memory, right after the kernel (relevant line is: *initramfs cattleinit.cpio followkernel*)
- * finally the cmdline.txt (passed to the kernel) contains the bootparameters for the kernel
+ * the config.txt file (present on all Pis) instructs the bootloader to load the cattleinit.cpio file in memory, right after the kernel (relevant line is: *initramfs cattleinit.cpio followkernel*)
+ * finally the cmdline.txt (passed to the kernel) contains the boot parameters for the kernel
 
 ```bash
 cat cmdline.txt | tr " " "\n"
@@ -126,7 +126,7 @@ Because the cmdline.txt is part of the image, if your configuration instructs th
 
 Fortunately there is one place where the API key does not get overwritten. If we have a file named **/cattlepi/apikey** the API key will be loaded from that file and will override the kernel parameters one (see logic [here]( https://github.com/cattlepi/cattlepi/blob/2c2d2100c8538f8df34adb31c1db1c2004f152da/templates/raspbian/resources/usr/share/initramfs-tools/scripts/cattlepi-base/helpers))
 
-In the root of SDcard do:
+In the root of SDCard do:
 ```bash
 sudo bash -c "echo 8db071a4-63ef-47f7-9cfc-ca479b5422da > cattlepi/apikey"
 ```
@@ -153,7 +153,7 @@ https://api.cattlepi.com/boot/<unique_id>/config
 
 In the back the API will recognize this and will try to find the config for the specific device. If found it will use that config. If not found it will attempt to locate the default config. If that's found the default is server. If neither are found you get the 404 that you're experiencing now. 
 
-Why have a default boot configuration target? The thinking here is that you should be able to connect your devices and have them use a generic boot target without having to worry about their ids. Later, if you want to specialize certain devices to do certain things you can easily inspect a list of deviceids that talked to the API and use them to specialize the devices.  
+Why have a default boot configuration target? The thinking here is that you should be able to connect your devices and have them use a generic boot target without having to worry about their ids. Later, if you want to specialize certain devices to do certain things you can easily inspect a list of device ids that talked to the API and use them to specialize the devices.  
 
 Right now let's create a default boot target, using our api key:
 ```bash

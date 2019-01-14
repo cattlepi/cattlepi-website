@@ -56,7 +56,7 @@ The format is the one the sfdisk command line utility uses. [More here](https://
 This means that you can partition a prototype SD card using whatever tools you want, dump and base64 encode the configuration and after that use it on any number of Pis that have the same size SD card and it will just work out of the box for you.  
 
 A few clarifications: 
- * the CattlePi initramfs scripts will apply the sd config for you and preserve what's on the boot partition, but the first partition needs to be a FAT partition (type=b). Using a different partition type may mean that your Pi will not boot.
+ * the CattlePi initramfs scripts will apply the SD config for you and preserve what's on the boot partition, but the first partition needs to be a FAT partition (type=b). Using a different partition type may mean that your Pi will not boot.
  * after the layout is performed, partitions with type=b will be formatted as FAT32 and partition with type=83 will be formatted as ext4. 
  * once a layout is correctly done, the CattlePi boot process will not attempt to redo the layout (runs once - we want prevent situation in which you want to tweak things and/or expand partition and the layout would kill your modifications on next boot). If you want to re-run, you need to remove the /boot/sdlayout.json file (where /boot mounted on /dev/mmcblk0p1)
 

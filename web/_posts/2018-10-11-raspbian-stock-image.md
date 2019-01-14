@@ -28,7 +28,7 @@ _For completeness, here is how is the stock raspbian we are laying down differen
  * _we run the bootstrap script that allows us to inject the ssh keys (if any) and run the usercode (if any). So this way we can take control over the pi running the stock raspbian via the device boot configuration._
 
 So you'll get the same as stock raspbian with the 3 mentioned differences. 
-You need the sd card to be in a compatible layout (compatible layout means at least 2 partitions, the first one being a FAT partition (type b), and the 2nd one being a linux partition (type 83) + the sdcard needs to have a dos mbr) or you need to associate the proper sdlayout to enable it. More on sdlayout in this [previous tutorial]({% post_url 2018-09-23-sdcard-layout %})
+You need the SD card to be in a compatible layout (compatible layout means at least 2 partitions, the first one being a FAT partition (type b), and the 2nd one being a Linux partition (type 83) + the SDCard needs to have a dos mbr) or you need to associate the proper sdlayout to enable it. More on sdlayout in this [previous tutorial]({% post_url 2018-09-23-sdcard-layout %})
 
 Also, here is an example of device boot target configuration configuration that uses this recipe:
 ```json
@@ -67,7 +67,7 @@ unit: sectors
 /dev/mmcblk0p2 : start=     8194048, size=    18432000, type=83
 ```
 
-Final note: inside a booted Pi that successfully wrote the stock raspbian to sd card and rebooted you will find a script [**/etc/cattlepi/restore_cattlepi.sh**](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_stock/resources/bin/restore_cattlepi.sh) that you can use if you ever want to revert this Pi to being managed by CattlePi. 
+Final note: inside a booted Pi that successfully wrote the stock raspbian to SD card and rebooted you will find a script [**/etc/cattlepi/restore_cattlepi.sh**](https://github.com/cattlepi/cattlepi/blob/master/templates/raspbian_stock/resources/bin/restore_cattlepi.sh) that you can use if you ever want to revert this Pi to being managed by CattlePi. 
 Should you ever want to revert make sure you have an up-to-date device boot target config and run this script with root privileges.
 
 Find the *latest* raspbian stock image info in the [Images]({% link images.md %}) section.
