@@ -8,6 +8,16 @@ Currently available images.
 You can reference these (along with the associated md5sum in your device boot configurations).  
 
 ## How to translate this images into boot config?
+### Easy/New way 
+Use the INFO field to update the configuration in one go:
+Example:
+```bash
+APIKEY=your_api_key_goes_here
+account_device_config_update.sh -k ${API_KEY} -i -ipkg ${INFO}
+```
+More about the **account_device_config_update.sh** script [here]({% post_url 2019-05-19-updating-device-configs %})
+
+### Legacy way
 Translate the given shell variables  into something you can use against the cattlepi api to program the boot target for specific devices. 
 
 Example:
