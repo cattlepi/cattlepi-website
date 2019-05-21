@@ -11,7 +11,7 @@ Wireless functionality is now a fully supported CattlePi feature! Once the prope
 
 You need a few things setup for this all to work properly:
 * A valid `wpa_supplicant.conf` file that is base64 encoded (just as we do with the usercode).  An example of said file is below. See the [Raspberry Pi docs here](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md) for more info.  **Make sure you set your country code in the file per the documentation!**
-* The config for your pi must have a top-level key `wpa_supplicant` (at the same level as `usercode`, etc). The key contains the base64 encoded `wpa_supplicant` file. (Example below)
+* The config for your pi must have a config key `wpa_supplicant`. The key contains the base64 encoded `wpa_supplicant` file. (Example below)
 
 Putting this all together is straightforward. Create a file `wpa_supplicant.conf` that looks like the following, substituting your details:
 
@@ -44,7 +44,7 @@ This will give us a long string of characters. This long string is what will liv
 }
 ```
 
-We'll POST this config file to the API, allowing us to use it for future builds. This is identical to the way we would use "usercode" within our builds.
+We'll POST this config file to the API, allowing us to use it for future builds. 
 
 ```bash
 PAYLOAD='{...,"config":{"wpa_supplicant": "your-base-64-encoded-wpa_supplicant",...}}'
