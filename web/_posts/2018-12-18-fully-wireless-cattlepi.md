@@ -32,13 +32,14 @@ Then we'll base64 encode the file:
 cat wpa_supplicant.conf | base64 -w 0
 ```
 
-This will give us a long string of characters. This long string is what will live in our config file under the key `wpa_supplicant`. See the sample below.
+This will give us a long string of characters. This long string is what will live in our config file under the key `config.wpa_supplicant`. See the sample below.
 
 ```json
 {
-  "usercode": "",
-  "wpa_supplicant": "Awholebunchofbase64encodeddata",
-  "bootcode": "",
+  "config": {
+    "wpa_supplicant": "Awholebunchofbase64encodeddata",
+    ...
+  }
 ...
 }
 ```
@@ -46,7 +47,7 @@ This will give us a long string of characters. This long string is what will liv
 We'll POST this config file to the API, allowing us to use it for future builds. This is identical to the way we would use "usercode" within our builds.
 
 ```bash
-PAYLOAD='{"usercode":"yourusercode","wpa_supplicant": "your-base-64-encoded-wpa_supplicant",...}'
+PAYLOAD='{...,"config":{"wpa_supplicant": "your-base-64-encoded-wpa_supplicant",...}}'
 
 curl -vvv -H "Accept: application/json" \
     -H "Content-Type: application/json" \
@@ -61,7 +62,7 @@ To verify that we POST-ed the correct config:
 curl -H "Accept: application/json" \
     -H "Content-Type: application/json" \
     -H "X-Api-Key: yourcoolapikey" \
-    https://api.cattlepi.com/boot/default/config | jq -r .wpa_supplicant | base64 -d
+    https://api.cattlepi.com/boot/default/config | jq -r .config.wpa_supplicant | base64 -d
 ```
 
 Now we should be able to fully provision our Pi.  Let the Pi go through the entire CattlePi provisioning process, until it is sitting at a login prompt. Even with proper wireless config, a fully booted `raspbian_cattlepi` machine that has an Ethernet cable plugged into it will give precedence to the hardwired network. At this point, you can reboot the machine, pull the Ethernet cable, and function wirelessly from this point forward!
