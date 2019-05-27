@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  "Full wireless functionality (including the initramfs)"
+title:  "Wireless functionality"
 excerpt_separator: <!--more-->
 ---
 One of the great things about the Raspberry Pi 3 is its ability to use a wireless network connection, removing the need for extra cables. Up until now, Raspberry Pis provisioned with CattlePi have required a hardwired network connection. You may have even tried to hack around this by including a `wpa_supplicant` in your rootfs or other methods.
 
-Wireless functionality is now a fully supported CattlePi feature! Once the proper key is setup in the config, and your CattlePi is fully provisioned, it will connect to the wireless network to do its business (even in the initramfs!).
+Wireless functionality is now a fully supported CattlePi feature! Once the proper key is setup in the config, and your CattlePi is fully provisioned, it will connect to the wireless network to do its business.
 
 <!--more-->
 
