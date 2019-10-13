@@ -3,24 +3,16 @@ layout: page
 title: Api
 permalink: /api/
 ---
-The endpoint for the API is: `https://api.cattlepi.com`.  
+The following specifies how the external endpoint should behave if you want it to work out of the box with CattlePi. To make it easier we refer to the endpoint as `https://api.cattlepi.com`, but you can run the api wherever you would like. Be sure to update this in the configuration file as described [here](https://github.com/cattlepi/cattlepi/blob/07e384e17c3af7261ac3b075dfbd58408d849f85/doc/BUILDING.md#step-9---update-the-configuration-with-your-values)
+
 The API accepts `JSON` and produces `JSON`. All examples here use `curl` to show interactions with the API.  
 
 ## API Keys
 
-All requests to the API must be accompanied by an API key. Requests without an API key will fail with a `400 Bad Request` response status.  
+All requests to the API should be accompanied by an API key. Requests without an API key will fail with a `400 Bad Request` response status.  
 
 **The key must be passed in a header named 'X-Api-Key'**
 
-To request an API key, enter your email address in following form:
-
-<form action="https://aux.cattlepi.com/signup" method="post" enctype='application/json'>
-  <div>
-    <label for="email">Email: </label>
-    <input name="email" id="email">
-    <button>SignUp</button>
-  </div>  
-</form><br>
 All the following examples use the demo `deadbeef` API key.  
 
 Example request:
@@ -130,22 +122,6 @@ The corresponding response would be:
       https://api.cattlepi.com/images/global/initramfs.tgz
   ```
 
-  At this iteration this will most likely result in a redirection (302) and the location that you will be pointed to is a temporary AWS S3 download. You will need to follow the redirect and download the image before the link expires.
-
-  A sample response:
-  ```bash
-  < HTTP/1.1 302 Found
-  < Date: Tue, 26 Jun 2018 05:20:55 GMT
-  < Content-Type: application/json
-  < Content-Length: 0
-  < Connection: keep-alive
-  < x-amzn-RequestId: b3ae5e43-7900-11e8-9b7b-4d5b77c8057d
-  < x-amz-apigw-id: JE0AsH3yvHcFo7w=
-  < Location: https://cattlepi-images.s3.amazonaws.com/global/initramfs.tgz?AWSAccessKeyId=ASIAIK4I7NAAVTVCQ6UA&Signature=a7u87tfMnC3N0h6h8rLJigSc3BM%3D&x-amz-security-token=FQoDYXdzEJ7%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDMoDCHuiWoGyR2XCpCKNAimobryo74h6%2BjdDsKl4DsWOtXQsKkLJE%2F4aXHHrBGtd9UFfk%2FbdNj10MryFenYB%2BCWfKQGmIOC1ouEMR0GIlsZb2X3NjGNhagOO%2FIpFm4auqgect3P69fkQqNAOSPB40EWXldnJTjDcXoc9th4ZRhjn3rmOftd4w7VdoHtKU3AT2CxnykldrF3cAviMig8FX2DJU%2F7nF8tfM3h46%2BhG4z6iKr9W76WUGWAmF69rFpF7XfZZhqTcdnj5OTNZ4%2BjpTnokhi88X5%2BB8489%2FIORyRwcCIdSJIaHQ2xI%2Fa7GKZpSPzaYrdXP7gHCeQOVW0XxDTgqRqqi1sNNo42U2RKbMuwE2pShm6nUwmBpi0lAKJOax9kF&Expires=1529990485
-  < X-Amzn-Trace-Id: Root=1-5b31cd37-a90fd0188f6c12685705b278
-  ```
-  At this point in time we don't give you the option to upload your own images. You will have to host and serve your own images or use the [prebuilt images]({% link images.md %}) we offer.
-
 ### https://api.cattlepi.com/track
 Tracking allows to retrieve information your devices have reported and to identify devices that are active on the network. A device is considered active if it was seen within the last 3 months.  
 
@@ -181,8 +157,6 @@ Tracking allows to retrieve information your devices have reported and to identi
   ]
   ```
 
-  **Important**: The api will keep a maximum number of **10 entries per device** (oldest entry gets removed if you already have 10 and want to add another). Each entry can be at most **256 chars in length**. Also as you observe from the example above, the api tracks records for whenever the device configuration is retrieved or updated automatically (BOOT GET above)
-
 + **`POST`**  
   Used to add a new log entry for the specified device.   
   Example request:
@@ -208,25 +182,3 @@ Tracking allows to retrieve information your devices have reported and to identi
   ```
 
   Please notice the timestamp (UTC) that was automatically added. The timestamp also counts towards the 256 character limit. Also notice that the tracking information is append only (i.e. you cannot delete from it)
-
-## API Quota Limits
-
-Ideally we would like the usage of this API to be free. We hope that, for the vast majority of users and use cases, this will be the case. For the exceptional cases we do have quotas on the number of API calls that you can make. This ensures that our running costs do not spiral out of control. 
-
-The limits are as follows:
- * `GET  https://api.cattlepi.com/boot/{deviceid}/config`: maximum of **60** requests per **hour**
- * `POST https://api.cattlepi.com/boot/{deviceid}/config`: maximum of **10** requests per **hour**
- * `DELETE https://api.cattlepi.com/boot/{deviceid}/config`: maximum of **10** requests per **hour**
- * `GET https://api.cattlepi.com/images/{space}/filename`: maximum of **10** requests per **month**
- * `GET https://api.cattlepi.com/track`: maximum of **300** requests per **hour**
- * `GET https://api.cattlepi.com/track/{deviceid}`: maximum of **300** requests per **hour**
- * `POST https://api.cattlepi.com/track/{deviceid}`: maximum of **120** requests per **hour**
- 
-Unused requests **do not accumulate**.
-
-What this means is:
- * if you had a single device, and rebooted it each minute, you would not hit the API limits
- * if you had to alter or update your configuration, you could make ten updates per hour _at the most_. Or you could update the configuration for ten devices in one hour. Again, this should not constrain you (but do reach out if you need this to be higher)
- * the ten requests per month for downloading images may seem a bit draconian at first. The reasoning is as follows: the images themselves are large and the downloads will consume real bandwidth. If you have less than five devices, this quota should easily suit your needs (recall that the images are cached locally - this is the main reason why we want to cache them). If you need to get around this you could store the images somewhere your devices can access (intra- or Internet), and point the config to those images. Alternatively, we are open to learning more about your use case (and perhaps helping you with the additional bandwidth)
-
-We do not currently support uploading your custom images through our API. However, this is on our strategic road-map. Again, we encourage you to reach out and tell us about your use case.
